@@ -36,9 +36,9 @@ func UpdateRole(entity domain.Role) *domain.Role {
 	config.GetDatabase().Create(entity).Find(&tableData)
 	return tableData
 }
-func GetRole(customerId string) domain.Role {
+func GetRole(roleId string) domain.Role {
 	entity := domain.Role{}
-	config.GetDatabase().Where("id = ?", customerId).Find(&entity)
+	config.GetDatabase().Where("id = ?", roleId).Find(&entity)
 	return entity
 }
 func GetRoles() []domain.Role {

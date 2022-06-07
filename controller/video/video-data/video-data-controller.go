@@ -11,6 +11,8 @@ import (
 	"tim-api/config"
 	"tim-api/controller/util"
 	"tim-api/domain"
+	role_repo "tim-api/storage/user/role-repo"
+	user_repo "tim-api/storage/user/user-repo"
 	repository "tim-api/storage/video/video-data"
 )
 
@@ -21,13 +23,53 @@ func Home(app *config.Env) http.Handler {
 	r.Post("/create", create(app))
 	r.Post("/update", update(app))
 	r.Get("/getAll", getAll(app))
-	r.Get("/getRwa", getRaw(app))
+	r.Get("/getRwa/{id}/{email}", getRaw(app))
+	r.Get("/video-picture/{id}", getVideoPicture(app))
 	return r
 }
 
+func getVideoPicture(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		picture, err := util.GetVideoPictures(id)
+		if err != nil {
+			fmt.Println(err, " error reading picture!")
+		}
+		result, err := json.Marshal(picture)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			return
+		}
+	}
+}
+func isAdmin(email string) bool {
+	user := user_repo.GetUser(email)
+	if user.RoleId == "" {
+		return false
+	}
+	role := role_repo.GetRole(user.RoleId)
+	if role.Name == "" {
+		return false
+	}
+	if role.Name == "agent" || role.Name == "admin" || role.Name == "superAdmin" {
+		return true
+	}
+	return false
+}
 func getRaw(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "files/test/upload-196722650.mp4")
+		id := chi.URLParam(r, "id")
+		email := chi.URLParam(r, "email")
+		if isAdmin(email) {
+			http.ServeFile(w, r, "files/test/"+id+".mp4")
+			return
+		}
+		return
 	}
 }
 
@@ -134,7 +176,7 @@ func update(app *config.Env) http.HandlerFunc {
 
 func readVideoFile(id string, extension string) ([]byte, error) {
 	//file, err := os.ReadFile("files/test/"+id+""+extension)
-	file, err := os.ReadFile("files/test/upload-196722650.mp4")
+	file, err := os.ReadFile("files/test/" + id + ".mp4")
 	if err != nil {
 		fmt.Println(err, " error reading file!")
 		return nil, err

@@ -55,10 +55,10 @@ func ScreenShort(id, extension string) {
 		fmt.Println(result)
 	}
 }
-func GetPictures(id string) []byte {
+func GetVideoPictures(id string) ([]byte, error) {
 	dat, err := os.ReadFile("files/pictures/" + id + ".png")
 	if err != nil {
 		fmt.Println(err, "error reading file")
 	}
-	return dat
+	return dat, err
 }
