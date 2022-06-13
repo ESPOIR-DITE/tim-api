@@ -38,7 +38,7 @@ func UpdateUserAccount(entity domain.UserAccount) *domain.UserAccount {
 }
 func GetUserAccount(customerId string) domain.UserAccount {
 	entity := domain.UserAccount{}
-	config.GetDatabase().Where("CustomerId = ?", customerId).Find(&entity)
+	config.GetDatabase().Where("customer_id = ?", customerId).Find(&entity)
 	return entity
 }
 func GetUserAccountWithEmail(email string) domain.UserAccount {

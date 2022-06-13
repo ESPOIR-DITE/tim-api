@@ -2,6 +2,7 @@ package user_repo
 
 import (
 	"fmt"
+	"tim-api/api"
 	"tim-api/config"
 	"tim-api/domain"
 )
@@ -40,6 +41,26 @@ func UpdateUser(entity domain.User) *domain.User {
 func GetUser(email string) domain.User {
 	entity := domain.User{}
 	connection.Where("email = ?", email).Find(&entity)
+	return entity
+}
+func GetAllAgents() []domain.User {
+	entity := []domain.User{}
+	connection.Where("role_id = ?", api.AgentId).Find(&entity)
+	return entity
+}
+func GetAllSuperAdmins() []domain.User {
+	entity := []domain.User{}
+	connection.Where("role_id = ?", api.SuperAdminId).Find(&entity)
+	return entity
+}
+func GetAllUsers() []domain.User {
+	entity := []domain.User{}
+	connection.Where("role_id = ?", "").Find(&entity)
+	return entity
+}
+func GetAllAdmins() []domain.User {
+	entity := []domain.User{}
+	connection.Where("role_id = ?", api.AdminId).Find(&entity)
 	return entity
 }
 func GetUsers() []domain.User {

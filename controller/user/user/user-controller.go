@@ -20,7 +20,79 @@ func Home(app *config.Env) http.Handler {
 	r.Post("/create", create(app))
 	r.Post("/update", update(app))
 	r.Get("/getAll", getAll(app))
+	r.Get("/getAllAgents", getAllAgents(app))
+	r.Get("/getAllUsers", getAllUsers(app))
+	r.Get("/getAllAdmins", getAllAdmins(app))
+	r.Get("/getAllSuperAdmins", getAllSuperAdmins(app))
 	return r
+}
+
+func getAllUsers(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := repository.GetAllUsers()
+		result, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error writing bytes")))
+			return
+		}
+	}
+}
+
+func getAllSuperAdmins(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := repository.GetAllSuperAdmins()
+		result, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error writing bytes")))
+			return
+		}
+	}
+}
+
+func getAllAdmins(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := repository.GetAllAdmins()
+		result, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error writing bytes")))
+			return
+		}
+	}
+}
+
+func getAllAgents(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := repository.GetAllAgents()
+		result, err := json.Marshal(user)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error writing bytes")))
+			return
+		}
+	}
 }
 
 func delete(app *config.Env) http.HandlerFunc {

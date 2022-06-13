@@ -46,6 +46,11 @@ func GetUserVideo(id string) domain.UserVideo {
 	config.GetDatabase().Where("id = ?", id).Find(&entity)
 	return entity
 }
+func GetUserVideoWithVideoId(videoId string) domain.UserVideo {
+	entity := domain.UserVideo{}
+	config.GetDatabase().Where("video_id = ?", videoId).Find(&entity)
+	return entity
+}
 func GetUserVideos() []domain.UserVideo {
 	var entity []domain.UserVideo
 	config.GetDatabase().Find(&entity)

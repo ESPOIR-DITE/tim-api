@@ -3,8 +3,7 @@ package user_repo
 import (
 	"fmt"
 	"testing"
-	"time"
-	"timtubeApi/domain"
+	"tim-api/domain"
 )
 
 func TestCreateUserTable(t *testing.T) {
@@ -12,7 +11,7 @@ func TestCreateUserTable(t *testing.T) {
 	fmt.Println("result :", result)
 }
 func TestCreateUser(t *testing.T) {
-	entity := domain.User{"dite@gmail.com", "espoir", "ditekemena", time.Now(), "0001"}
+	entity := domain.User{"dite@gmail.com", "espoir", "ditekemena", "time.Now()", "0001"}
 	result := CreateUser(entity)
 	fmt.Println(result)
 }
@@ -29,5 +28,10 @@ func TestSetDatabase(t *testing.T) {
 }
 func TestDelete(t *testing.T) {
 	result := Delete("espoir@gmail.com")
+	fmt.Println(result)
+}
+
+func TestGetAllAgents(t *testing.T) {
+	result := GetAllAgents()
 	fmt.Println(result)
 }

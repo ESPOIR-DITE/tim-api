@@ -16,12 +16,32 @@ import (
 func Home(app *config.Env) http.Handler {
 	r := chi.NewRouter()
 	r.Get("/get/{id}", get(app))
+	r.Get("/get-with-videoId/{videoId}", getWithVideoId(app))
 	r.Get("/get-all/{customerId}", getAllOf(app))
 	r.Get("/delete/{id}", delete(app))
 	r.Post("/create", create(app))
 	r.Post("/update", update(app))
 	r.Get("/getAll", getAll(app))
 	return r
+}
+
+func getWithVideoId(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		videoId := chi.URLParam(r, "videoId")
+		if videoId != "" {
+			object := repository.GetUserVideoWithVideoId(videoId)
+			result, err := json.Marshal(object)
+			if err != nil {
+				fmt.Println("couldn't marshal")
+				render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+				return
+			}
+			_, err = w.Write([]byte(result))
+			if err != nil {
+				return
+			}
+		}
+	}
 }
 
 func getAllOf(app *config.Env) http.HandlerFunc {

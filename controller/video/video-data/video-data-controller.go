@@ -1,6 +1,7 @@
 package video_data
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,6 +15,7 @@ import (
 	role_repo "tim-api/storage/user/role-repo"
 	user_repo "tim-api/storage/user/user-repo"
 	repository "tim-api/storage/video/video-data"
+	video_repo "tim-api/storage/video/video-repo"
 )
 
 func Home(app *config.Env) http.Handler {
@@ -23,9 +25,57 @@ func Home(app *config.Env) http.Handler {
 	r.Post("/create", create(app))
 	r.Post("/update", update(app))
 	r.Get("/getAll", getAll(app))
-	r.Get("/getRwa/{id}/{email}", getRaw(app))
+	r.Get("/getRwa/{id}", getRaw(app))
+	r.Get("/getRwa/{id}/{email}", getAllRaw(app))
 	r.Get("/video-picture/{id}", getVideoPicture(app))
+	r.Get("/video-public-picture", getPublicVideoPicture(app))
 	return r
+}
+
+type VideoVideoData struct {
+	Video     domain.Video
+	VideoData domain.VideoData
+}
+
+func getPublicVideoPicture(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		videos := video_repo.GetAllPublicVideo()
+		var videoVideoData = []VideoVideoData{}
+		for _, video := range videos {
+			videoData := repository.GetVideoDate(video.Id)
+			if videoData.Id != "" {
+				videoVideoData = append(videoVideoData, VideoVideoData{video, videoData})
+			}
+		}
+		result, err := json.Marshal(videoVideoData)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			return
+		}
+	}
+}
+
+func getAllRaw(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		email := chi.URLParam(r, "email")
+		var extension = ".mp4"
+		videData := repository.GetVideoDate(id)
+		if videData.FileType != "" {
+			extension = "." + videData.FileType
+		}
+		if isAdmin(email) {
+			//http.ServeFile(w, r, "files/test/"+id+extension)
+			http.ServeFile(w, r, ""+id+extension)
+			return
+		}
+		return
+	}
 }
 
 func getVideoPicture(app *config.Env) http.HandlerFunc {
@@ -64,12 +114,33 @@ func isAdmin(email string) bool {
 func getRaw(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
-		email := chi.URLParam(r, "email")
-		if isAdmin(email) {
-			http.ServeFile(w, r, "files/test/"+id+".mp4")
+		var videoObject domain.VideoData
+		videoDate := repository.GetVideoDate(id)
+		if videoDate.Id == "" {
+			fmt.Println("error reading Video")
+		} else {
+			//videoObject = video_repo.GetVideo(id)
+			//file, err := os.ReadFile("files/test/" + id + "." + videoDate.FileType)
+			file, err := os.ReadFile("" + id + "." + videoDate.FileType)
+			if err != nil {
+				fmt.Println(err, " error reading file")
+			}
+			sEnc := base64.StdEncoding.EncodeToString(file)
+			videoObject = domain.VideoData{videoDate.Id, []byte{}, []byte{}, videoDate.FileType, sEnc}
+		}
+
+		//http.ServeFile(w, r, "files/test/"+id+".mp4")
+		//return
+		result, err := json.Marshal(videoObject)
+		if err != nil {
+			fmt.Println("couldn't marshal")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
 			return
 		}
-		return
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -111,19 +182,19 @@ func getAll(app *config.Env) http.HandlerFunc {
 
 func create(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &domain.VideoDate{}
+		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
 			return
 		}
 		object := repository.GetCategoryObject(data)
-		if len(object.Video) == 0 {
+		if len(object.Picture) == 0 {
 			fmt.Println(object.Id)
 		} else {
 			fmt.Println()
 		}
-		go util.VideoWriter(data.Id, data.Video, data.FileType)
+		go util.VideoWriter(object)
 
 		//response := repository.CreateVideoData(object)
 		//if response.Id == "" {
@@ -147,7 +218,7 @@ func create(app *config.Env) http.HandlerFunc {
 
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &domain.VideoDate{}
+		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
@@ -188,9 +259,9 @@ func get(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		if id != "" {
-			//object := repository.GetVideoDate(id)
-			file, err := readVideoFile(id, "")
-			result, err := json.Marshal(file)
+			object := repository.GetVideoDate(id)
+			//file, err := readVideoFile(id, "")
+			result, err := json.Marshal(object)
 			if err != nil {
 				fmt.Println("couldn't marshal")
 				render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))

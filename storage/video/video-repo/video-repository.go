@@ -42,6 +42,16 @@ func GetVideo(id string) domain.Video {
 	connection.Where("id = ?", id).Find(&entity)
 	return entity
 }
+func GetAllPublicVideo() []domain.Video {
+	entity := []domain.Video{}
+	connection.Where("is_private = ?", false).Find(&entity)
+	return entity
+}
+func GetAllPrivateVideo() []domain.Video {
+	entity := []domain.Video{}
+	connection.Where("is_private = ?", true).Find(&entity)
+	return entity
+}
 func GetVideos() []domain.Video {
 	entity := []domain.Video{}
 	connection.Find(&entity)
