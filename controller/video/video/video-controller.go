@@ -92,7 +92,7 @@ func create(app *config.Env) http.HandlerFunc {
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating video")))
 			return
 		}
-		result, err := json.Marshal(repository.GetVideoObject(response))
+		result, err := json.Marshal(response)
 		if err != nil {
 			fmt.Println("couldn't marshal")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
@@ -121,7 +121,7 @@ func update(app *config.Env) http.HandlerFunc {
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating Video")))
 			return
 		}
-		result, err := json.Marshal(repository.GetVideoObject(response))
+		result, err := json.Marshal(response)
 		if err != nil {
 			fmt.Println("couldn't marshal")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))

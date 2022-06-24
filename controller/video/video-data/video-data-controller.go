@@ -23,18 +23,113 @@ func Home(app *config.Env) http.Handler {
 	r.Get("/get/{id}", get(app))
 	r.Get("/delete/{id}", delete(app))
 	r.Post("/create", create(app))
+	r.Post("/update-video", updateVideo(app))
+	r.Post("/create-picture", createPicture(app))
+	r.Post("/update-picture", updatePicture(app))
 	r.Post("/update", update(app))
 	r.Get("/getAll", getAll(app))
 	r.Get("/getRwa/{id}", getRaw(app))
 	r.Get("/getRwa/{id}/{email}", getAllRaw(app))
 	r.Get("/video-picture/{id}", getVideoPicture(app))
 	r.Get("/video-public-picture", getPublicVideoPicture(app))
+	r.Get("/stream/{videoId}", stream(app))
 	return r
+}
+
+func updateVideo(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := &domain.VideoData{}
+		err := render.Bind(r, data)
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(err))
+			return
+		}
+		object := repository.GetCategoryObject(data)
+		if len(object.Picture) == 0 {
+			fmt.Println(object.Id)
+		} else {
+			fmt.Println()
+		}
+		go util.VideoWriter(object, true)
+
+		_, err = w.Write([]byte("Done"))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("writing bytes")))
+			return
+		}
+		return
+	}
+}
+
+func stream(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		videoId := chi.URLParam(r, "videoId")
+		videoDate := repository.GetVideoDate(videoId)
+		if videoDate.Id == "" {
+			fmt.Println("error reading Video")
+			return
+		}
+		fileBytes, err := util.ReadVideoFile(videoId, videoDate.FileType)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "video/mp4")
+		w.Write(fileBytes)
+		return
+	}
+}
+
+func updatePicture(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := &domain.VideoData{}
+		err := render.Bind(r, data)
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(err))
+			return
+		}
+		object := repository.GetCategoryObject(data)
+		videoDataObject := repository.UpdateVideoDate(object)
+		result, err := json.Marshal(videoDataObject)
+		if err != nil {
+			fmt.Println(err, " error creating videoData")
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("writing bytes")))
+			return
+		}
+		return
+	}
 }
 
 type VideoVideoData struct {
 	Video     domain.Video
 	VideoData domain.VideoData
+}
+
+func createPicture(app *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		data := &domain.VideoData{}
+		err := render.Bind(r, data)
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(err))
+			return
+		}
+		object := repository.GetCategoryObject(data)
+		videoDataObject := repository.CreateVideoData(object)
+		result, err := json.Marshal(videoDataObject)
+		if err != nil {
+			fmt.Println(err, " error creating videoData")
+		}
+		_, err = w.Write([]byte(result))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("writing bytes")))
+			return
+		}
+		return
+	}
 }
 
 func getPublicVideoPicture(app *config.Env) http.HandlerFunc {
@@ -71,7 +166,7 @@ func getAllRaw(app *config.Env) http.HandlerFunc {
 		}
 		if isAdmin(email) {
 			//http.ServeFile(w, r, "files/test/"+id+extension)
-			http.ServeFile(w, r, ""+id+extension)
+			http.ServeFile(w, r, "files/videos/"+id+extension)
 			return
 		}
 		return
@@ -121,7 +216,7 @@ func getRaw(app *config.Env) http.HandlerFunc {
 		} else {
 			//videoObject = video_repo.GetVideo(id)
 			//file, err := os.ReadFile("files/test/" + id + "." + videoDate.FileType)
-			file, err := os.ReadFile("" + id + "." + videoDate.FileType)
+			file, err := os.ReadFile("files/videos/" + id + "." + videoDate.FileType)
 			if err != nil {
 				fmt.Println(err, " error reading file")
 			}
@@ -194,25 +289,14 @@ func create(app *config.Env) http.HandlerFunc {
 		} else {
 			fmt.Println()
 		}
-		go util.VideoWriter(object)
+		go util.VideoWriter(object, false)
 
-		//response := repository.CreateVideoData(object)
-		//if response.Id == "" {
-		//	fmt.Println("error creating videoData")
-		//	render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating videoData")))
-		//	return
-		//}
-		//result, err := json.Marshal(repository.GetCategoryObject(response))
-		//if err != nil {
-		//	fmt.Println("couldn't marshal")
-		//	render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
-		//	return
-		//}
-		//_, err = w.Write([]byte(result))
-		//if err != nil {
-		//	render.Render(w, r, util.ErrInvalidRequest(errors.New("writing bytes")))
-		//	return
-		//}
+		_, err = w.Write([]byte("Done"))
+		if err != nil {
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("writing bytes")))
+			return
+		}
+		return
 	}
 }
 
@@ -231,7 +315,7 @@ func update(app *config.Env) http.HandlerFunc {
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating Video")))
 			return
 		}
-		result, err := json.Marshal(repository.GetCategoryObject(response))
+		result, err := json.Marshal(response)
 		if err != nil {
 			fmt.Println("couldn't marshal")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))

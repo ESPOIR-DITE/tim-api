@@ -6,23 +6,36 @@ import (
 	"github.com/mowshon/moviego"
 	"image"
 	"image/png"
+	"io/ioutil"
 	"os"
 	"tim-api/domain"
 	video_data "tim-api/storage/video/video-data"
 	"time"
 )
 
-func VideoWriter(date domain.VideoData) {
-	tempFile, err := os.Create(date.Id + "." + date.FileType)
+const videoURL = "files/videos/"
+const pictureURL = "files/pictures/"
+const pictureReserveURL = "files/test/"
+
+func ReadVideoFile(id, extension string) ([]byte, error) {
+	fileBytes, err := ioutil.ReadFile(videoURL + id + "." + extension)
 	if err != nil {
-		fmt.Println(err, " Creating video")
+		fmt.Println(err, "error reading video file.")
+		return []byte{}, err
+	}
+	return fileBytes, nil
+}
+
+func VideoWriter(date domain.VideoData, isUpdate bool) {
+	tempFile, err := os.Create(videoURL + date.Id + "." + date.FileType)
+	if err != nil {
+		fmt.Println(err, " Creating video temp file")
 	}
 	//file, err := os.ReadFile("1234.mp4")
 	//_, err = tempFile.Write(file)
 	_, err = tempFile.Write(date.Video)
 	if err != nil {
-		fmt.Println(err, "fail to Upload File")
-
+		fmt.Println(err, "fail to write File")
 	} else {
 		fmt.Println("Successfully Wrote video")
 		time.Sleep(1 * time.Minute)
@@ -32,66 +45,42 @@ func VideoWriter(date domain.VideoData) {
 		if err != nil {
 			fmt.Println(err, " error cropping")
 		}
-		err = savePicture(date)
+		err = savePicture(date, isUpdate)
 		if err != nil {
 			fmt.Println(err, " error saving image")
 		}
 	}
-	// return that we have successfully uploaded our file!
 }
 
-// readImage reads a
-func savePicture(data domain.VideoData) error {
-	picture, err := os.ReadFile(data.Id + ".png")
-	if err != nil {
-		fmt.Println(err, " could not read picture!")
-		return err
-	} else {
-		//ScaleDown(data.Id)
-		//errRemove := os.Remove("files/pictures/" + data.Id + ".png")
-		//if errRemove != nil {
-		//	fmt.Println(errRemove, " could not Remove picture!")
-		//}
-		videoDataObject := domain.VideoData{data.Id, picture, []byte{}, data.FileType, data.FileSize}
-		result := video_data.CreateVideoData(videoDataObject)
-		if result.Id != "" {
-			fmt.Println("error creating videoData")
-			return errors.New("Could not create videoData!")
-		}
-	}
-	return nil
-}
-
-//Tested working
+// Tested working
 func ScreenShort(id, extension string) {
-	first, err := moviego.Load(id + "." + extension)
+	fmt.Println("opening video for screenshotting...")
+	fmt.Println("id: ", id)
+	fmt.Println("extension: ", extension)
+	first, err := moviego.Load(videoURL + id + "." + extension)
+	//first, err := moviego.Load(id + "." + extension)
 	if err != nil {
 		fmt.Println(err, "error ScreenShorting")
 	}
-	result, err := first.Screenshot(5, ""+id+".png")
+	result, err := first.Screenshot(5, pictureURL+id+".png")
 	if err != nil {
 		fmt.Println(err, "error")
 	} else {
-		fmt.Println(result)
+		fmt.Println("Result: ", result)
 	}
-}
-func GetVideoPictures(id string) ([]byte, error) {
-	dat, err := os.ReadFile("files/pictures/" + id + ".png")
-	if err != nil {
-		fmt.Println(err, "error reading file")
-	}
-	return dat, err
+	fmt.Println("screenshot successfully")
 }
 
 func CropImage(imageURL string) error {
-	img, err := ReadPngImage(imageURL)
+	img, err := ReadPngImage(pictureURL + imageURL)
 	if err != nil {
+		fmt.Println(err, " error reading image for cropping.")
 		return err
 	}
-	err = os.Remove(imageURL)
-	if err != nil {
-		fmt.Println(err, " error deleting image")
-	}
+	//err = os.Remove(imageURL)
+	//if err != nil {
+	//	fmt.Println(err, " error deleting image")
+	//}
 	info := img.Bounds().Size()
 
 	xcenter := info.X/2 + 200
@@ -101,10 +90,47 @@ func CropImage(imageURL string) error {
 	//img, err = cropImage(img, image.Rect(0, 0, 100, 100))
 	img, err = cropIt(img, image.Rect(ycenter, xcenter, 200, 200))
 	if err != nil {
+		fmt.Println(err, " error cutting image.")
 		return err
 	}
 
 	return writePngImage(img, imageURL)
+}
+
+// readImage reads a
+func savePicture(data domain.VideoData, isUpdate bool) error {
+	picture, err := os.ReadFile(pictureURL + data.Id + ".png")
+	if err != nil {
+		fmt.Println(err, " could not read picture!")
+		return err
+	} else {
+		errRemove := os.Remove(pictureURL + data.Id + ".png")
+		if errRemove != nil {
+			fmt.Println(errRemove, " could not Remove picture!")
+		}
+		videoDataObject := domain.VideoData{data.Id, picture, []byte{}, data.FileType, data.FileSize}
+		if isUpdate {
+			result := video_data.UpdateVideoDate(videoDataObject)
+			if result.Id == "" {
+				fmt.Println("error update videoData")
+				return errors.New("Could not update videoData!")
+			}
+		}
+		result := video_data.CreateVideoData(videoDataObject)
+		if result.Id == "" {
+			fmt.Println("error creating videoData")
+			return errors.New("Could not create videoData!")
+		}
+	}
+	return nil
+}
+
+func GetVideoPictures(id string) ([]byte, error) {
+	dat, err := os.ReadFile("files/pictures/" + id + ".png")
+	if err != nil {
+		fmt.Println(err, "error reading file")
+	}
+	return dat, err
 }
 
 // readImage reads a image file from disk. We're assuming the file will be png
@@ -147,8 +173,9 @@ func cropIt(img image.Image, crop image.Rectangle) (image.Image, error) {
 
 // writeImage writes an Image back to the disk.
 func writePngImage(img image.Image, name string) error {
-	fd, err := os.Create(name)
+	fd, err := os.Create(pictureURL + name)
 	if err != nil {
+		fmt.Println(err, "error creating cropped temp file")
 		return err
 	}
 	defer fd.Close()

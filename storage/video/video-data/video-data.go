@@ -31,10 +31,10 @@ func CreateVideoData(entity domain.VideoData) *domain.VideoData {
 	connection.Create(user).Find(&tableData)
 	return tableData
 }
-func UpdateVideoDate(entity domain.VideoData) *domain.VideoData {
+func UpdateVideoDate(entity domain.VideoData) domain.VideoData {
 	var tableData = &domain.VideoData{}
 	connection.Updates(entity).Find(&tableData)
-	return tableData
+	return entity
 }
 func GetVideoDate(id string) domain.VideoData {
 	entity := domain.VideoData{}

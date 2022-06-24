@@ -18,24 +18,24 @@ func CreateVideoTable() bool {
 	return true
 }
 func SetDatabase() {
-	erro := connection.Set("gorm:table_options", "ENGINE=Distributed(cluster, default, hits)").AutoMigrate(&domain.Video{})
-	if erro != nil {
+	err := connection.Set("gorm:table_options", "ENGINE=Distributed(cluster, default, hits)").AutoMigrate(&domain.Video{})
+	if err != nil {
 		fmt.Println("User database config not set")
 	} else {
 		fmt.Println("User database config set successfully")
 	}
 }
-func CreateVideo(entity domain.Video) *domain.Video {
+func CreateVideo(entity domain.Video) domain.Video {
 	var tableData = &domain.Video{}
 	id := "V-" + uuid.New().String()
 	user := domain.Video{id, entity.Title, entity.Date, entity.DateUploaded, entity.Description, entity.IsPrivate, entity.Price, entity.URL}
 	connection.Create(user).Find(&tableData)
-	return tableData
+	return user
 }
-func UpdateVideo(entity domain.Video) *domain.Video {
+func UpdateVideo(entity domain.Video) domain.Video {
 	var tableData = &domain.Video{}
 	connection.Create(entity).Find(&tableData)
-	return tableData
+	return GetVideoObject(tableData)
 }
 func GetVideo(id string) domain.Video {
 	entity := domain.Video{}
