@@ -30,8 +30,9 @@ func Home(app *config.Env) http.Handler {
 	r.Get("/getAll", getAll(app))
 	r.Get("/getRwa/{id}", getRaw(app))
 	r.Get("/getRwa/{id}/{email}", getAllRaw(app))
-	r.Get("/video-picture/{id}", getVideoPicture(app))
+	//r.Get("/video-picture/{id}", getVideoPicture(app))
 	r.Get("/video-public-picture", getPublicVideoPicture(app))
+	r.Get("/video-picture", getPublicVideoPicture(app))
 	r.Get("/stream/{videoId}", stream(app))
 	return r
 }
@@ -166,7 +167,11 @@ func getAllRaw(app *config.Env) http.HandlerFunc {
 		}
 		if isAdmin(email) {
 			//http.ServeFile(w, r, "files/test/"+id+extension)
-			http.ServeFile(w, r, "files/videos/"+id+extension)
+			//bytes,err :=readVideoFile(id,extension)
+			//if err != nil {
+			//	return
+			//}
+			http.ServeFile(w, r, "videos/"+id+extension)
 			return
 		}
 		return

@@ -12,6 +12,8 @@ import (
 	userController "tim-api/controller/user/user"
 	userAccountController "tim-api/controller/user/user-account"
 	userSubscriptionController "tim-api/controller/user/user-account"
+	userBank "tim-api/controller/user/user-bank"
+	userDetails "tim-api/controller/user/user-detail"
 	userVideoController "tim-api/controller/user/user-video"
 	"tim-api/controller/util"
 )
@@ -24,6 +26,8 @@ func Home(app *config.Env) http.Handler {
 	mux.Mount("/user-account", userAccountController.Home(app))
 	mux.Mount("/user-subscription", userSubscriptionController.Home(app))
 	mux.Mount("/user-video", userVideoController.Home(app))
+	mux.Mount("/user-detail", userDetails.Home(app))
+	mux.Mount("/user-bank", userBank.Home(app))
 
 	return mux
 }

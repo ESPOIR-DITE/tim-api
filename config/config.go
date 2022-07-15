@@ -9,10 +9,11 @@ import (
 )
 
 type Env struct {
-	ErrorLog *log.Logger
-	InfoLog  *log.Logger
-	Path     string
-	Session  *scs.SessionManager
+	WarningLog *log.Logger
+	ErrorLog   *log.Logger
+	InfoLog    *log.Logger
+	Path       string
+	Session    *scs.SessionManager
 }
 
 type templateData struct {
@@ -34,6 +35,5 @@ func (app *Env) NotFound(w http.ResponseWriter) {
 func (app *Env) ServerError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
 	app.ErrorLog.Output(2, trace)
-
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }

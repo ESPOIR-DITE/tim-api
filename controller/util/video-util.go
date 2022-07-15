@@ -13,9 +13,11 @@ import (
 	"time"
 )
 
-const videoURL = "files/videos/"
+//const videoURL = "files/videos/"
 const pictureURL = "files/pictures/"
-const pictureReserveURL = "files/test/"
+
+//const pictureReserveURL = "files/test/"
+const videoURL = "videos/"
 
 func ReadVideoFile(id, extension string) ([]byte, error) {
 	fileBytes, err := ioutil.ReadFile(videoURL + id + "." + extension)
@@ -31,8 +33,6 @@ func VideoWriter(date domain.VideoData, isUpdate bool) {
 	if err != nil {
 		fmt.Println(err, " Creating video temp file")
 	}
-	//file, err := os.ReadFile("1234.mp4")
-	//_, err = tempFile.Write(file)
 	_, err = tempFile.Write(date.Video)
 	if err != nil {
 		fmt.Println(err, "fail to write File")
@@ -54,11 +54,7 @@ func VideoWriter(date domain.VideoData, isUpdate bool) {
 
 // Tested working
 func ScreenShort(id, extension string) {
-	fmt.Println("opening video for screenshotting...")
-	fmt.Println("id: ", id)
-	fmt.Println("extension: ", extension)
 	first, err := moviego.Load(videoURL + id + "." + extension)
-	//first, err := moviego.Load(id + "." + extension)
 	if err != nil {
 		fmt.Println(err, "error ScreenShorting")
 	}
@@ -71,23 +67,17 @@ func ScreenShort(id, extension string) {
 	fmt.Println("screenshot successfully")
 }
 
+// CropImage This crops an image removing extra size in the edge of
+//the picture keeping the center portion of 200px X 200px.
 func CropImage(imageURL string) error {
 	img, err := ReadPngImage(pictureURL + imageURL)
 	if err != nil {
 		fmt.Println(err, " error reading image for cropping.")
 		return err
 	}
-	//err = os.Remove(imageURL)
-	//if err != nil {
-	//	fmt.Println(err, " error deleting image")
-	//}
-	info := img.Bounds().Size()
-
-	xcenter := info.X/2 + 200
-	ycenter := info.Y/2 + 200
-	//fmt.Println("picture center: x= ", xcenter, " y= ", ycenter)
-	//I've hard-coded a crop rectangle, start (0,0), end (100, 100).
-	//img, err = cropImage(img, image.Rect(0, 0, 100, 100))
+	size := img.Bounds().Size()
+	xcenter := size.X/2 + 200
+	ycenter := size.Y/2 + 200
 	img, err = cropIt(img, image.Rect(ycenter, xcenter, 200, 200))
 	if err != nil {
 		fmt.Println(err, " error cutting image.")
@@ -97,7 +87,7 @@ func CropImage(imageURL string) error {
 	return writePngImage(img, imageURL)
 }
 
-// readImage reads a
+// savePicture this submits videoData data to the api.
 func savePicture(data domain.VideoData, isUpdate bool) error {
 	picture, err := os.ReadFile(pictureURL + data.Id + ".png")
 	if err != nil {
@@ -126,7 +116,8 @@ func savePicture(data domain.VideoData, isUpdate bool) error {
 }
 
 func GetVideoPictures(id string) ([]byte, error) {
-	dat, err := os.ReadFile("files/pictures/" + id + ".png")
+	//dat, err := os.ReadFile("files/pictures/" + id + ".png")
+	dat, err := os.ReadFile(pictureURL + id + ".png")
 	if err != nil {
 		fmt.Println(err, "error reading file")
 	}

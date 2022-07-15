@@ -17,11 +17,22 @@ func Environment() *config.Env {
 	sessionManager = scs.New()
 	sessionManager.Lifetime = 24 * time.Hour
 	sessionManager.IdleTimeout = 20 * time.Minute
+	warningFileName := time.Now().Format("2006-01-02") + "-WARNING-LOGS.txt"
+	warningFile, err := os.OpenFile(warningFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
+	errorFileName := time.Now().Format("2006-01-02") + "-ERROR-LOGS.txt"
+	errorFile, err := os.OpenFile(errorFileName, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	if err != nil {
+		log.Fatal(err)
+	}
 	env := &config.Env{
-		ErrorLog: log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime),
-		InfoLog:  log.New(os.Stderr, "INFO\t", log.Ldate|log.Ltime|log.Lshortfile),
-		Path:     "./view/html/",
-		Session:  sessionManager,
+		WarningLog: log.New(warningFile, "WARNING\t", log.Ldate|log.Ltime|log.Lshortfile),
+		ErrorLog:   log.New(errorFile, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile),
+		InfoLog:    log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime|log.Lshortfile),
+		Path:       "./view/html/",
+		Session:    sessionManager,
 	}
 	return env
 }

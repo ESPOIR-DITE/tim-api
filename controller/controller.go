@@ -10,9 +10,14 @@ import (
 	"html/template"
 	"net/http"
 	"tim-api/config"
+	channel_controller "tim-api/controller/channel"
 	"tim-api/controller/user"
 	"tim-api/controller/util"
 	"tim-api/controller/video"
+	"tim-api/domain"
+	role_repo "tim-api/storage/chanel/channel-repository"
+	user_repo "tim-api/storage/user/user-repo"
+	video_repo "tim-api/storage/video/video-repo"
 )
 
 func Controllers(env *config.Env) http.Handler {
@@ -24,14 +29,46 @@ func Controllers(env *config.Env) http.Handler {
 
 	mux.Handle("/", homeHandler(env))
 	mux.Mount("/video", video.Home(env))
+	mux.Mount("/channel", channel_controller.Home(env))
 	mux.Mount("/user", user.Home(env))
 	mux.Handle("/system-set-up", setSystemSetUp(env))
+	mux.Handle("/board", Dashboard(env))
 	fileServer := http.FileServer(http.Dir("./view/assets/"))
 	// Use the mux.Handle() function to register the file server as the handler for
 	// all URL paths that start with "/assets/". For matching paths, we strip the
 	// "/static" prefix before the request reaches the file server.
 	mux.Mount("/assets/", http.StripPrefix("/assets", fileServer))
 	return mux
+}
+
+func Dashboard(env *config.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		type Dashboard struct {
+			PendingUsers int64 `json:"pending_users"`
+			Users        int64 `json:"users"`
+			Videos       int64 `json:"videos"`
+			Channels     int64 `json:"channels"`
+			UserStack    domain.UserStack
+		}
+		userStack := user_repo.GetUserStack()
+		pendingUser := user_repo.GetAllPendingUsers()
+		channels := role_repo.CountChannel()
+		videos := video_repo.CountVideo()
+		users := user_repo.CountUsers()
+
+		data := Dashboard{pendingUser, users, videos, channels, userStack}
+		response, err := json.Marshal(data)
+		if err != nil {
+			env.ErrorLog.Printf("couldn't marshal %s", err)
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
+			return
+		}
+		_, err = w.Write([]byte(response))
+		env.InfoLog.Println("read Dashboard success")
+		if err != nil {
+			return
+		}
+	}
 }
 
 func setSystemSetUp(env *config.Env) http.HandlerFunc {
@@ -46,6 +83,7 @@ func setSystemSetUp(env *config.Env) http.HandlerFunc {
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
 			return
 		}
+		env.InfoLog.Println("System setup")
 		_, err = w.Write([]byte(response))
 		if err != nil {
 			return

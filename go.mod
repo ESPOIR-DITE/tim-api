@@ -7,6 +7,7 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/render v1.0.1
 	github.com/google/uuid v1.3.0
+	github.com/gorilla/mux v1.8.0
 	github.com/json-iterator/go v1.1.12
 	github.com/mowshon/moviego v1.0.0
 	github.com/sendgrid/sendgrid-go v3.11.1+incompatible

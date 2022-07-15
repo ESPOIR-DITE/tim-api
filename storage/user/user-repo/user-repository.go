@@ -53,6 +53,15 @@ func GetAllSuperAdmins() []domain.User {
 	connection.Where("role_id = ?", api.SuperAdminId).Find(&entity)
 	return entity
 }
+func GetUserStack() domain.UserStack {
+	var superAdmin int64
+	var admin int64
+	var agent int64
+	connection.Table("users").Where("role_id = ?", api.SuperAdminId).Count(&superAdmin)
+	connection.Table("users").Where("role_id = ?", api.AdminId).Count(&admin)
+	connection.Table("users").Where("role_id = ?", api.AgentId).Count(&agent)
+	return domain.UserStack{superAdmin, admin, agent}
+}
 func GetAllUsers() []domain.User {
 	entity := []domain.User{}
 	connection.Where("role_id = ?", "").Find(&entity)
@@ -62,6 +71,16 @@ func GetAllAdmins() []domain.User {
 	entity := []domain.User{}
 	connection.Where("role_id = ?", api.AdminId).Find(&entity)
 	return entity
+}
+func GetAllPendingUsers() int64 {
+	var value int64
+	connection.Table("users").Where("role_id = ?", "").Count(&value)
+	return value
+}
+func CountUsers() int64 {
+	var value int64
+	connection.Table("users").Count(&value)
+	return value
 }
 func GetUsers() []domain.User {
 	entity := []domain.User{}

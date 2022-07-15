@@ -65,6 +65,11 @@ func DeleteVideo(email string) bool {
 	}
 	return false
 }
+func CountVideo() int64 {
+	var value int64
+	connection.Table("videos").Count(&value)
+	return value
+}
 func GetVideoObject(entity *domain.Video) domain.Video {
 	return domain.Video{entity.Id, entity.Title, entity.Date, entity.DateUploaded, entity.Description, entity.IsPrivate, entity.Price, entity.URL}
 }

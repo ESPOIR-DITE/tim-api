@@ -1,8 +1,11 @@
 package util
 
 import (
+	role_repo2 "tim-api/storage/chanel/channel-video-repository"
 	role_repo "tim-api/storage/user/role-repo"
 	user_account_repo "tim-api/storage/user/user-account-repo"
+	user_repo3 "tim-api/storage/user/user-bank"
+	user_repo2 "tim-api/storage/user/user-details"
 	user_repo "tim-api/storage/user/user-repo"
 	user_sub_repo "tim-api/storage/user/user-sub-repo"
 	user_video_repo "tim-api/storage/user/user-video-repo"
@@ -11,6 +14,10 @@ import (
 	video_category2 "tim-api/storage/video/video-comment"
 	video_data_repo "tim-api/storage/video/video-data"
 	video_repo "tim-api/storage/video/video-repo"
+
+	channel_repo "tim-api/storage/chanel/channel-repository"
+	channel_type_repo "tim-api/storage/chanel/channel-type-repository"
+	channel_subscription_repo "tim-api/storage/chanel/channelSubscription"
 )
 
 func TableSetUp() []TableSetUpReport {
@@ -20,11 +27,19 @@ func TableSetUp() []TableSetUpReport {
 	result = append(result, TableSetUpReport{"USER- SUBSCRIPTION TABLE", user_sub_repo.CreateUserSubscriptionTable()})
 	result = append(result, TableSetUpReport{"USER- VIDEO TABLE", user_video_repo.CreateUserVideoTable()})
 	result = append(result, TableSetUpReport{"ROLE TABLE", role_repo.CreateRoleTable()})
+	result = append(result, TableSetUpReport{"USER-DETAIL TABLE", user_repo2.CreateUserDetailsTable()})
+	result = append(result, TableSetUpReport{"USER-BANK TABLE", user_repo3.CreateUserBankTable()})
 
 	result = append(result, TableSetUpReport{"VIDEO TABLE", video_repo.CreateVideoTable()})
 	result = append(result, TableSetUpReport{"VIDEO DATA TABLE", video_data_repo.CreateVideoDataTable()})
 	result = append(result, TableSetUpReport{"VIDEO- CATEGORY TABLE", video_category.CreateVideoCategoryTable()})
 	result = append(result, TableSetUpReport{"VIDEO- COMMENT TABLE", video_category2.CreateVideoCommentTable()})
 	result = append(result, TableSetUpReport{"CATEGORY TABLE", video_repo2.CreateCategoryTable()})
+
+	result = append(result, TableSetUpReport{"CHANNEL TABLE", channel_repo.CreateChannelTable()})
+	result = append(result, TableSetUpReport{"CHANNEL-TYPE TABLE", channel_type_repo.CreateChannelTypeTable()})
+	result = append(result, TableSetUpReport{"CHANNEL-SUBSCRIPTION TABLE", channel_subscription_repo.CreateChannelSubscriptionTable()})
+	result = append(result, TableSetUpReport{"CHANNEL-VIDEO TABLE", role_repo2.CreateChannelVideoTable()})
+
 	return result
 }

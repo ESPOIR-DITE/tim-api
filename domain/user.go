@@ -5,6 +5,12 @@ import (
 	"net/http"
 )
 
+type UserStack struct {
+	SuperAdmin int64
+	Admin      int64
+	Agent      int64
+}
+
 type User struct {
 	Email     string `json:"email" gorm:"primaryKey"`
 	Name      string `json:"name"`

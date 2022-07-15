@@ -11,7 +11,7 @@ func TestCreateUserTable(t *testing.T) {
 	fmt.Println("result :", result)
 }
 func TestCreateUser(t *testing.T) {
-	entity := domain.User{"dite@gmail.com", "espoir", "ditekemena", "time.Now()", "0001"}
+	entity := domain.User{"julie@gmail.com", "espoir", "ditekemena", "1990-11-11 01:00:00.000", ""}
 	result := CreateUser(entity)
 	fmt.Println(result)
 }
@@ -33,5 +33,10 @@ func TestDelete(t *testing.T) {
 
 func TestGetAllAgents(t *testing.T) {
 	result := GetAllAgents()
+	fmt.Println(result)
+}
+
+func TestGetAllPendingUsers(t *testing.T) {
+	result := GetAllPendingUsers()
 	fmt.Println(result)
 }

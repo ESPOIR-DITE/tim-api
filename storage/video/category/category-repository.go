@@ -47,9 +47,9 @@ func GetCategories() []domain.Category {
 	connection.Find(&entity)
 	return entity
 }
-func DeleteCategory(email string) bool {
+func DeleteCategory(id string) bool {
 	entity := domain.Category{}
-	connection.Where("id = ?", email).Delete(&entity)
+	connection.Where("id = ?", id).Delete(&entity)
 	if entity.Id == "" {
 		return true
 	}
