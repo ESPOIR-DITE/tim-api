@@ -7,6 +7,8 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
+	"github.com/swaggo/http-swagger"
+	_ "github.com/swaggo/http-swagger/example/go-chi/docs"
 	"html/template"
 	"net/http"
 	"tim-api/config"
@@ -20,8 +22,24 @@ import (
 	video_repo "tim-api/storage/video/video-repo"
 )
 
+// @title chi-swagger example APIs
+// @version 1.0
+// @description chi-swagger example APIs
+// @BasePath /
+
 func Controllers(env *config.Env) http.Handler {
 	mux := chi.NewMux()
+	//cors := cors.New(cors.Options{
+	//	AllowedOrigins: []string{"*"},
+	//	// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
+	//	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+	//	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+	//	ExposedHeaders:   []string{"Link"},
+	//	AllowCredentials: true,
+	//	MaxAge:           300, // Maximum value not ignored by any of major browsers
+	//})
+	//mux.Use(cors.Handler)
+	mux.Use(config.CORS().Handler)
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
 	mux.Use(middleware.Logger)
@@ -38,6 +56,7 @@ func Controllers(env *config.Env) http.Handler {
 	// all URL paths that start with "/assets/". For matching paths, we strip the
 	// "/static" prefix before the request reaches the file server.
 	mux.Mount("/assets/", http.StripPrefix("/assets", fileServer))
+	mux.Mount("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8081/swagger/doc.json")))
 	return mux
 }
 
