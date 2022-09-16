@@ -3,6 +3,7 @@ package user_repo
 import (
 	"fmt"
 	"github.com/google/uuid"
+	"log"
 	"tim-api/config"
 	user_details "tim-api/domain/user/user-details"
 )
@@ -82,7 +83,10 @@ func IsExistUserDetailById(id string) bool {
 }
 func IsExistUserDetailsByEmail(email string) bool {
 	entity := user_details.UserDetails{}
-	connection.Where("user_email = ?", email).Find(&entity)
+	err := connection.Where("user_email = ?", email).Find(&entity).Error
+	if err != nil {
+		log.Fatal(err)
+	}
 	if entity.Id != "" {
 		return true
 	}

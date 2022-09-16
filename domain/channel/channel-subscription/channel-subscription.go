@@ -6,9 +6,8 @@ import (
 )
 
 type ChannelSubscription struct {
-	Id        string `json:"id" gorm:"primaryKey"`
-	ChannelId string `json:"channel_id"`
-	UserId    string `json:"user_id"`
+	ChannelId string `json:"channel_id" gorm:"primaryKey"`
+	UserId    string `json:"user_id" gorm:"primaryKey"`
 	Date      string `json:"date"`
 }
 

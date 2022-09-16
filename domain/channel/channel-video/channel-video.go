@@ -6,9 +6,8 @@ import (
 )
 
 type ChannelVideos struct {
-	Id          string `json:"id" gorm:"primaryKey"`
-	VideoId     string `json:"video_id"`
-	ChannelId   string `json:"channel_id"`
+	VideoId     string `json:"video_id" gorm:"primaryKey"`
+	ChannelId   string `json:"channel_id" gorm:"primaryKey"`
 	Description string `json:"description"`
 }
 

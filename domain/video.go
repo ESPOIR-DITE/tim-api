@@ -78,7 +78,6 @@ func (c Category) Bind(r *http.Request) error {
 }
 
 type VideoRelated struct {
-	Id             string `json:"id" gorm:"primaryKey"`
-	CurrentVideoId string `json:"currentVideo"`
+	CurrentVideoId string `json:"currentVideo" gorm:"primaryKey"`
 	RelatedVideoId string `json:"relatedVideoId"`
 }
