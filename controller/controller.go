@@ -56,7 +56,7 @@ func Controllers(env *config.Env) http.Handler {
 	// all URL paths that start with "/assets/". For matching paths, we strip the
 	// "/static" prefix before the request reaches the file server.
 	mux.Mount("/assets/", http.StripPrefix("/assets", fileServer))
-	mux.Mount("/swagger/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8081/swagger/doc.json")))
+	mux.Mount("/swagger/", httpSwagger.Handler(httpSwagger.URL("http://localhost:8081/swagger/doc.json")))
 	return mux
 }
 

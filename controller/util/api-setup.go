@@ -2,6 +2,7 @@ package util
 
 import (
 	role_repo2 "tim-api/storage/chanel/channel-video-repository"
+	"tim-api/storage/security"
 	role_repo "tim-api/storage/user/role-repo"
 	user_account_repo "tim-api/storage/user/user-account-repo"
 	user_repo3 "tim-api/storage/user/user-bank"
@@ -13,6 +14,8 @@ import (
 	video_category "tim-api/storage/video/video-category"
 	video_category2 "tim-api/storage/video/video-comment"
 	video_data_repo "tim-api/storage/video/video-data"
+	video_reaction_repo "tim-api/storage/video/video-reaction-repo"
+	video_related "tim-api/storage/video/video-related"
 	video_repo "tim-api/storage/video/video-repo"
 
 	channel_repo "tim-api/storage/chanel/channel-repository"
@@ -35,11 +38,15 @@ func TableSetUp() []TableSetUpReport {
 	result = append(result, TableSetUpReport{"VIDEO- CATEGORY TABLE", video_category.CreateVideoCategoryTable()})
 	result = append(result, TableSetUpReport{"VIDEO- COMMENT TABLE", video_category2.CreateVideoCommentTable()})
 	result = append(result, TableSetUpReport{"CATEGORY TABLE", video_repo2.CreateCategoryTable()})
+	result = append(result, TableSetUpReport{"VIDEO REACTION TABLE", video_reaction_repo.CreateVideoReactionTable()})
+	result = append(result, TableSetUpReport{"VIDEO RELATED TABLE", video_related.CreateVideoRelatedTable()})
 
 	result = append(result, TableSetUpReport{"CHANNEL TABLE", channel_repo.CreateChannelTable()})
 	result = append(result, TableSetUpReport{"CHANNEL-TYPE TABLE", channel_type_repo.CreateChannelTypeTable()})
 	result = append(result, TableSetUpReport{"CHANNEL-SUBSCRIPTION TABLE", channel_subscription_repo.CreateChannelSubscriptionTable()})
 	result = append(result, TableSetUpReport{"CHANNEL-VIDEO TABLE", role_repo2.CreateChannelVideoTable()})
+
+	result = append(result, TableSetUpReport{"SYSTEM SECURITY TABLE", security.CreateSystemSecurityTable()})
 
 	return result
 }

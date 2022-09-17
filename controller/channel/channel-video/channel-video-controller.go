@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"net/http"
 	"tim-api/config"
@@ -92,8 +93,8 @@ func updateChannel(app *config.Env) http.HandlerFunc {
 			render.Render(w, r, util.ErrInvalidRequest(err))
 			return
 		}
-		var response = repository.UpdateChannelVideo(data)
-		if response.Id == "" {
+		response, err := repository.UpdateChannelVideo(data)
+		if err != nil {
 			fmt.Println("error creating role")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating channel")))
 			return
@@ -129,14 +130,16 @@ func getChannel(app *config.Env) http.HandlerFunc {
 }
 func createChannel(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		_, claims, _ := jwtauth.FromContext(r.Context())
+		fmt.Println(claims)
 		data := channel_video.ChannelVideos{}
 		err := render.Bind(r, &data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
 			return
 		}
-		var response = repository.CreateChannelVideo(data)
-		if response.Id == "" {
+		response, err := repository.CreateChannelVideo(data)
+		if err != nil {
 			fmt.Println("error creating video channel")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating video channel")))
 			return

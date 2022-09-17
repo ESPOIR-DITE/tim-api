@@ -11,6 +11,7 @@ type UserAccount struct {
 	Password   string `json:"password"`
 	Date       string `json:"date"`
 	Status     bool   `json:"status"`
+	Token      string `json:"token"`
 }
 
 func (u UserAccount) Bind(r *http.Request) error {

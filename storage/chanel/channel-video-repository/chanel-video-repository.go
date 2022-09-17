@@ -2,7 +2,6 @@ package role_repo
 
 import (
 	"fmt"
-	"github.com/google/uuid"
 	"tim-api/config"
 	"tim-api/domain/channel/channel-video"
 )
@@ -25,18 +24,23 @@ func SetChannelDatabase() {
 		fmt.Println("Role database config set successfully")
 	}
 }
-func CreateChannelVideo(channel channel_video.ChannelVideos) channel_video.ChannelVideos {
+func CreateChannelVideo(channel channel_video.ChannelVideos) (channel_video.ChannelVideos, error) {
 	var tableData = channel_video.ChannelVideos{}
-	id := "CV-" + uuid.New().String()
-	user := channel_video.ChannelVideos{id, channel.VideoId, channel.ChannelId, channel.Description}
-	connection.Create(user).Find(&tableData)
-	return tableData
+	user := channel_video.ChannelVideos{channel.VideoId, channel.ChannelId, channel.Description}
+	err := connection.Create(user).Find(&tableData).Error
+	if err != nil {
+		return tableData, err
+	}
+	return tableData, nil
 }
-func UpdateChannelVideo(entity channel_video.ChannelVideos) channel_video.ChannelVideos {
+func UpdateChannelVideo(entity channel_video.ChannelVideos) (channel_video.ChannelVideos, error) {
 	var tableData = channel_video.ChannelVideos{}
 	//user := domain.Role{entity.Id, entity.Name, entity.Description}
-	connection.Where("id = ", entity.Id).Updates(entity).Find(&tableData)
-	return tableData
+	err := connection.Where("channel_id = ? And video_id = ?", entity.ChannelId, entity.VideoId).Updates(entity).Find(&tableData).Error
+	if err != nil {
+		return tableData, err
+	}
+	return tableData, nil
 }
 func GetChannelVideo(roleId string) channel_video.ChannelVideos {
 	entity := channel_video.ChannelVideos{}
@@ -60,11 +64,11 @@ func GetChannelVideos() []channel_video.ChannelVideos {
 }
 func DeleteChannelVideo(id string) bool {
 	entity := channel_video.ChannelVideos{}
-	connection.Where("id = ?", id).Delete(&entity)
-	if entity.Id == "" {
-		return true
+	err := connection.Where("id = ?", id).Delete(&entity).Error
+	if err != nil {
+		return false
 	}
-	return false
+	return true
 }
 func CountChannelVideo() int64 {
 	var value int64

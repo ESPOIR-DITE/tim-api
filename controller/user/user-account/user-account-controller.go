@@ -1,4 +1,4 @@
-package video_comment
+package user_account
 
 import (
 	"encoding/json"
@@ -9,7 +9,8 @@ import (
 	"net/http"
 	"tim-api/config"
 	"tim-api/controller/util"
-	"tim-api/domain"
+	user_account "tim-api/domain/user/user-account"
+	"tim-api/security"
 	repository "tim-api/storage/user/user-account-repo"
 )
 
@@ -25,22 +26,46 @@ func Home(app *config.Env) http.Handler {
 	return r
 }
 
+// login godoc
+// @Summary Authenticate User based on User struct containing email and password
+// @Produce json token
+// @Param user path string true "User Email"
+// @Success 200 {object} token
+// @Router /user/user-account/login [post]
 func login(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &domain.UserAccount{}
+		data := &user_account.UserAccount{}
 		err := render.Bind(r, data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
 			return
 		}
-		object := repository.GetUserAccountObject(data)
-		response := repository.Login(object)
-		if response.CustomerId == "" {
-			fmt.Println("error creating User account")
-			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating User account")))
+		isSuccessful, response := authenticateUser(data.Password, data.Email)
+		if !isSuccessful {
+			app.InfoLog.Println("error login User account. Password mismatch.")
+			render.Render(w, r, util.ErrInvalidRequest(errors.New("error login User account. Password mismatch.")))
 			return
 		}
-		result, err := json.Marshal(response)
+		//response, err := repository.Login(object)
+		//if err != nil {
+		//	fmt.Println("error creating User account")
+		//	render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating User account")))
+		//	return
+		//}
+		token, err := security.GenerateJWT(response.Email)
+		if err != nil {
+			fmt.Println("error generating token")
+			render.Render(w, r, util.InternalServeErr(errors.New("error generating token")))
+			return
+		}
+		userAccountUpdated, err := repository.UpdateToken(response, token)
+		if err != nil {
+			fmt.Println("error updating User account")
+			render.Render(w, r, util.InternalServeErr(errors.New("error updating userAccount")))
+			return
+		}
+
+		result, err := json.Marshal(userAccountUpdated)
 		if err != nil {
 			fmt.Println("couldn't marshal")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error marshalling")))
@@ -54,6 +79,12 @@ func login(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// delete godoc
+// @Summary Deletes UserAccount based on id
+// @Produce json bool
+// @Param id path string true
+// @Success 200 {object} bool
+// @Router /user/user-account/delete [get]
 func delete(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
@@ -92,7 +123,7 @@ func getAll(app *config.Env) http.HandlerFunc {
 
 func create(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &domain.UserAccount{}
+		data := &user_account.UserAccount{}
 		err := render.Bind(r, data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
@@ -121,7 +152,7 @@ func create(app *config.Env) http.HandlerFunc {
 
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := &domain.UserAccount{}
+		data := &user_account.UserAccount{}
 		err := render.Bind(r, data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
@@ -183,4 +214,15 @@ func getWithEmail(app *config.Env) http.HandlerFunc {
 			}
 		}
 	}
+}
+
+func authenticateUser(password, email string) (bool, user_account.UserAccount) {
+	result := repository.GetAllUserAccountByEmail(email)
+	for _, userAccount := range result {
+		ok, _ := security.ComparePasswords(userAccount.Password, password)
+		if ok {
+			return true, userAccount
+		}
+	}
+	return false, user_account.UserAccount{}
 }

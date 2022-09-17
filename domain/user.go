@@ -39,21 +39,6 @@ func (role Role) Bind(r *http.Request) error {
 	return nil
 }
 
-type UserAccount struct {
-	CustomerId string `json:"customerId" gorm:"primaryKey"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	Date       string `json:"date"`
-	Status     bool   `json:"status"`
-}
-
-func (u UserAccount) Bind(r *http.Request) error {
-	if u.Email == "" && u.Password == "" {
-		return errors.New("missing required fields")
-	}
-	return nil
-}
-
 type UserSubscription struct {
 	Id             string `json:"id" gorm:"primaryKey"`
 	UserId         string `json:"userId"`
