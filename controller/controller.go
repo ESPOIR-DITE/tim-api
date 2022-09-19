@@ -29,16 +29,6 @@ import (
 
 func Controllers(env *config.Env) http.Handler {
 	mux := chi.NewMux()
-	//cors := cors.New(cors.Options{
-	//	AllowedOrigins: []string{"*"},
-	//	// AllowOriginFunc:  func(r *http.Request, origin string) bool { return true },
-	//	AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-	//	AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
-	//	ExposedHeaders:   []string{"Link"},
-	//	AllowCredentials: true,
-	//	MaxAge:           300, // Maximum value not ignored by any of major browsers
-	//})
-	//mux.Use(cors.Handler)
 	mux.Use(config.CORS().Handler)
 	mux.Use(middleware.RequestID)
 	mux.Use(middleware.RealIP)
@@ -110,8 +100,14 @@ func setSystemSetUp(env *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary homeHandler all items in the todo list
+// @ID get-all-todos
+// @Produce json
+// @Success 200 {object} todo
+// @Router /todo [get]
 func homeHandler(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		files := []string{
 			app.Path + "index.html",
 		}

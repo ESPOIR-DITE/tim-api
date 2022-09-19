@@ -13,11 +13,13 @@ import (
 	"time"
 )
 
-//const videoURL = "files/videos/"
-const pictureURL = "files/pictures/"
+const pictureURL = "files/videos/"
 
-//const pictureReserveURL = "files/test/"
-const videoURL = "videos/"
+//const pictureURL = "files/pictures/"
+
+const videoURL = "files/test/"
+
+//const videoURL = "videos/"
 
 func ReadVideoFile(id, extension string) ([]byte, error) {
 	fileBytes, err := ioutil.ReadFile(videoURL + id + "." + extension)
@@ -68,7 +70,7 @@ func ScreenShort(id, extension string) {
 }
 
 // CropImage This crops an image removing extra size in the edge of
-//the picture keeping the center portion of 200px X 200px.
+// the picture keeping the center portion of 200px X 200px.
 func CropImage(imageURL string) error {
 	img, err := ReadPngImage(pictureURL + imageURL)
 	if err != nil {

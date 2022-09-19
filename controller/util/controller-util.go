@@ -47,7 +47,7 @@ func ErrRecourseNotAllowed(err error) render.Renderer {
 	return &ErrResponse{
 		Err:            err,
 		HTTPStatusCode: 405,
-		StatusText:     "Invalid request.",
+		StatusText:     "Not Allowed.",
 		ErrorText:      err.Error(),
 	}
 }

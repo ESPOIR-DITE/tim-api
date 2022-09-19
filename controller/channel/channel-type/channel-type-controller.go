@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"net/http"
 	"tim-api/config"
 	"tim-api/controller/util"
+	controller_auth "tim-api/controller/util/controller-auth"
 	"tim-api/domain"
 	repository "tim-api/storage/chanel/channel-type-repository"
 )
@@ -90,14 +92,18 @@ func getChannelType(app *config.Env) http.HandlerFunc {
 }
 func createChannelType(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticate Token
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
+
 		data := domain.ChannelType{}
 		err := render.Bind(r, &data)
 		if err != nil {
 			render.Render(w, r, util.ErrInvalidRequest(err))
 			return
 		}
-		var response = repository.CreateChannelType(data)
-		if response.Id == "" {
+		response, err := repository.CreateChannelType(data)
+		if err != nil {
 			fmt.Println("error creating role")
 			render.Render(w, r, util.ErrInvalidRequest(errors.New("error creating channel-subscription")))
 			return

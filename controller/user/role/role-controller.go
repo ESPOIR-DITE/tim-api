@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"net/http"
 	"tim-api/config"
 	"tim-api/controller/util"
+	controller_auth "tim-api/controller/util/controller-auth"
 	"tim-api/domain"
 	repository "tim-api/storage/user/role-repo"
 )
@@ -25,6 +27,13 @@ func Home(app *config.Env) http.Handler {
 	//r.Get("/homeError", indexErrorHanler(app))
 	return r
 }
+
+// @Summary homeHandler returns a string
+// @ID homeHandler-roles
+// @Produce json
+// @Success 200 {object} role
+// @Failure 404 {object} message
+// @Router /user/role [get]
 func homeHandler(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		response, err := json.Marshal("Role")
@@ -40,8 +49,17 @@ func homeHandler(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary getRoles returns a list of role object
+// @ID get-roles
+// @Produce json
+// @Success 200 {object} role
+// @Failure 404 {object} message
+// @Router /user/role/getAll [get]
 func getRoles(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		user := repository.GetRoles()
 		result, err := json.Marshal(user)
 		if err != nil {
@@ -56,8 +74,18 @@ func getRoles(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary create returns a role object
+// @ID create-role
+// @Produce json
+// @Param data body role true
+// @Success 200 {object} role
+// @Failure 404 {object} message
+// @Router /user/role/create [post]
 func createRole(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.Role{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -85,8 +113,19 @@ func createRole(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary update returns a role object
+// @ID update-role
+// @Produce json
+// @Param data body role true
+// @Success 200 {object} role
+// @Failure 404 {object} message
+// @Router /user/role/update [post]
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
+
 		data := &domain.Role{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -114,8 +153,17 @@ func update(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary getRole returns a role object
+// @ID get-role
+// @Produce json
+// @Param id path string true
+// @Success 200 {object} role
+// @Failure 404 {object} message
+// @Router /user/role/get/{id} [get]
 func getRole(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		id := chi.URLParam(r, "id")
 		if id != "" {
 			role := repository.GetRole(id)

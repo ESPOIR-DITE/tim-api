@@ -12,7 +12,7 @@ func TestCreateRoleTable(t *testing.T) {
 	assert.True(t, result)
 }
 func TestCreateRole(t *testing.T) {
-	object := domain.Role{"", "superAdmin", "user"}
+	object := domain.Role{"", "agentAdmin", "agent"}
 	result := CreateRole(object)
 	assert.NotNil(t, result)
 	fmt.Println(result)

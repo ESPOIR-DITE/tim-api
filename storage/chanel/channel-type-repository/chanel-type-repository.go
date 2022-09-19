@@ -23,12 +23,15 @@ func SetChannelTypeDatabase() {
 		fmt.Println("Role database config set successfully")
 	}
 }
-func CreateChannelType(channelType domain.ChannelType) domain.ChannelType {
+func CreateChannelType(channelType domain.ChannelType) (domain.ChannelType, error) {
 	var tableData = domain.ChannelType{}
 	id := "CT-" + uuid.New().String()
 	user := domain.ChannelType{id, channelType.Name, channelType.Description}
-	config.GetDatabase().Create(user).Find(&tableData)
-	return tableData
+	err := config.GetDatabase().Create(user).Find(&tableData).Error
+	if err != nil {
+		return tableData, err
+	}
+	return tableData, nil
 }
 func UpdateChannelType(entity domain.ChannelType) domain.ChannelType {
 	var tableData = domain.ChannelType{}

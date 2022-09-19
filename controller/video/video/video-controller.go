@@ -5,10 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"net/http"
 	"tim-api/config"
 	"tim-api/controller/util"
+	controller_auth "tim-api/controller/util/controller-auth"
 	"tim-api/domain"
 	repository "tim-api/storage/video/video-repo"
 )
@@ -24,6 +26,12 @@ func Home(app *config.Env) http.Handler {
 	return r
 }
 
+// @Summary getUserVideo returns a list of Video of a user [agent]
+// @ID getUserVideo-video
+// @Produce json
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /video/get-pictures/{email} [get]
 func getUserVideo(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := repository.GetVideos()
@@ -41,6 +49,12 @@ func getUserVideo(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary delete returns a boolean
+// @ID delete-video
+// @Produce json
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /video/video/delete [get]
 func delete(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
@@ -60,6 +74,12 @@ func delete(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary homeHandler returns a list of Video
+// @ID getAll-video
+// @Produce json
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /video/video/getAll [get]
 func getAll(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := repository.GetVideos()
@@ -77,8 +97,17 @@ func getAll(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary homeHandler returns a Video object
+// @ID getAll-video
+// @Produce json
+// @Param data body Model:Video true
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /video/video/create [post]
 func create(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.Video{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -106,8 +135,17 @@ func create(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary update returns a Video object
+// @ID update-video
+// @Produce json
+// @Param data body Model:Video true
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /video/video/update [post]
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.Video{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -135,6 +173,13 @@ func update(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary get returns a Video object
+// @ID get-video
+// @Produce json
+// @Param id path string true
+// @Success 200 {object} Video
+// @Failure 404 {object} message
+// @Router /user/role/get/{id} [get]
 func get(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
