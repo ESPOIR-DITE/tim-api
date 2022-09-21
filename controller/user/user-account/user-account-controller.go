@@ -28,9 +28,15 @@ func Home(app *config.Env) http.Handler {
 
 // login godoc
 // @Summary Authenticate User based on User struct containing email and password
-// @Produce json token
-// @Param user path string true "User Email"
-// @Success 200 {object} token
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: UserAccount
+//
+// @Success 200 {object} string
 // @Router /user/user-account/login [post]
 func login(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -81,8 +87,14 @@ func login(app *config.Env) http.HandlerFunc {
 
 // delete godoc
 // @Summary Deletes UserAccount based on id
-// @Produce json bool
-// @Param id path string true
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: UserAccount
+//
 // @Success 200 {object} bool
 // @Router /user/user-account/delete [get]
 func delete(app *config.Env) http.HandlerFunc {

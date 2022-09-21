@@ -6,11 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi"
+	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-chi/render"
 	"net/http"
 	"os"
 	"tim-api/config"
 	"tim-api/controller/util"
+	controller_auth "tim-api/controller/util/controller-auth"
 	"tim-api/domain"
 	role_repo "tim-api/storage/user/role-repo"
 	user_repo "tim-api/storage/user/user-repo"
@@ -39,6 +41,9 @@ func Home(app *config.Env) http.Handler {
 
 func updateVideo(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -84,6 +89,9 @@ func stream(app *config.Env) http.HandlerFunc {
 
 func updatePicture(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -112,6 +120,9 @@ type VideoVideoData struct {
 
 func createPicture(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -211,8 +222,25 @@ func isAdmin(email string) bool {
 	}
 	return false
 }
+
+// @Summary getRaw  Returns a file of a video.
+// @ID getRaw-videoData
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: string
+//
+// @Success 200 {object} VideoData
+// @Failure 404 {object} string
+// @Router /video/video-data/getRwa/{id} [get]
 func getRaw(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		id := chi.URLParam(r, "id")
 		var videoObject domain.VideoData
 		videoDate := repository.GetVideoDate(id)
@@ -244,8 +272,24 @@ func getRaw(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary delete  remove a specified videoData from DB
+// @ID delete-videoData
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: string
+//
+// @Success 200 {object} VideoData
+// @Failure 404 {object} string
+// @Router /video/video-data/delete [get]
 func delete(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		id := chi.URLParam(r, "id")
 		if id != "" {
 			role := repository.DeleteVideoData(id)
@@ -263,6 +307,12 @@ func delete(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary getAll returns a list of VideoData object
+// @ID getAll-videoData
+// @Produce json
+// @Success 200 {object} VideoData
+// @Failure 404 {object} string
+// @Router /video/video-data/getAll [get]
 func getAll(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := repository.GetVideoDatas()
@@ -280,8 +330,24 @@ func getAll(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary create returns a VideoData object
+// @ID create-videoData
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: VideoData
+//
+// @Success 200 {object} VideoData
+// @Failure 404 {object} string
+// @Router /video/video-data/create [post]
 func create(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {
@@ -305,8 +371,24 @@ func create(app *config.Env) http.HandlerFunc {
 	}
 }
 
+// @Summary update Updates an existing videoData
+// @ID update-videoData
+// @Produce json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: VideoData
+//
+// @Success 200 {object} VideoData
+// @Failure 404 {object} string
+// @Router /video/video-data/update [post]
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		//Authenticating user by checking the token.
+		token := jwtauth.TokenFromHeader(r)
+		controller_auth.IsAllowed(token, w, r)
 		data := &domain.VideoData{}
 		err := render.Bind(r, data)
 		if err != nil {

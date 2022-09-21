@@ -31,8 +31,8 @@ func Home(app *config.Env) http.Handler {
 // @Summary homeHandler returns a string
 // @ID homeHandler-roles
 // @Produce json
-// @Success 200 {object} role
-// @Failure 404 {object} message
+// @Success 200 {object} Role
+// @Failure 404 {object} string
 // @Router /user/role [get]
 func homeHandler(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -52,8 +52,8 @@ func homeHandler(app *config.Env) http.HandlerFunc {
 // @Summary getRoles returns a list of role object
 // @ID get-roles
 // @Produce json
-// @Success 200 {object} role
-// @Failure 404 {object} message
+// @Success 200 {object} Role
+// @Failure 404 {object} string
 // @Router /user/role/getAll [get]
 func getRoles(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +77,15 @@ func getRoles(app *config.Env) http.HandlerFunc {
 // @Summary create returns a role object
 // @ID create-role
 // @Produce json
-// @Param data body role true
-// @Success 200 {object} role
-// @Failure 404 {object} message
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Role
+//
+// @Success 200 {object} Role
+// @Failure 404 {object} string
 // @Router /user/role/create [post]
 func createRole(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -116,9 +122,15 @@ func createRole(app *config.Env) http.HandlerFunc {
 // @Summary update returns a role object
 // @ID update-role
 // @Produce json
-// @Param data body role true
-// @Success 200 {object} role
-// @Failure 404 {object} message
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Role
+//
+// @Success 200 {object} Role
+// @Failure 404 {object} string
 // @Router /user/role/update [post]
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -155,10 +167,16 @@ func update(app *config.Env) http.HandlerFunc {
 
 // @Summary getRole returns a role object
 // @ID get-role
-// @Produce json
-// @Param id path string true
-// @Success 200 {object} role
-// @Failure 404 {object} message
+// @Produce:  application/json
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Role
+//
+// @Success 200 {object} Role
+// @Failure 404 {object} string
 // @Router /user/role/get/{id} [get]
 func getRole(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

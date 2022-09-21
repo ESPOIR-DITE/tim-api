@@ -25,7 +25,7 @@ import (
 // @title chi-swagger example APIs
 // @version 1.0
 // @description chi-swagger example APIs
-// @BasePath /
+// @BasePath: /tim-api/
 
 func Controllers(env *config.Env) http.Handler {
 	mux := chi.NewMux()
@@ -100,11 +100,11 @@ func setSystemSetUp(env *config.Env) http.HandlerFunc {
 	}
 }
 
-// @Summary homeHandler all items in the todo list
+// @Summary homeHandler all items in the
 // @ID get-all-todos
 // @Produce json
-// @Success 200 {object} todo
-// @Router /todo [get]
+// @Success 200
+// @Router  / [get]
 func homeHandler(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 

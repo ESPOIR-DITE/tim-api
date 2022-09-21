@@ -5,6 +5,9 @@ import (
 	"net/http"
 )
 
+// VideoData represents the main entity of this application.
+//
+// swagger:model
 type VideoData struct {
 	Id       string `json:"id" gorm:"primaryKey"`
 	Picture  []byte `json:"picture"`

@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/alexedwards/scs/v2"
+	_ "github.com/swaggo/http-swagger/example/go-chi/docs"
 	"log"
 	"net/http"
 	"os"

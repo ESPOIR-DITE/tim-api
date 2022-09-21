@@ -29,9 +29,13 @@ func Home(app *config.Env) http.Handler {
 // @Summary getUserVideo returns a list of Video of a user [agent]
 // @ID getUserVideo-video
 // @Produce json
-// @Success 200 {object} Video
-// @Failure 404 {object} message
-// @Router /video/get-pictures/{email} [get]
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
+// @Router /video/video/get-pictures/{email} [get]
 func getUserVideo(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := repository.GetVideos()
@@ -50,10 +54,14 @@ func getUserVideo(app *config.Env) http.HandlerFunc {
 }
 
 // @Summary delete returns a boolean
-// @ID delete-video
+// @ID deleteVideo
 // @Produce json
-// @Success 200 {object} Video
-// @Failure 404 {object} message
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
 // @Router /video/video/delete [get]
 func delete(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -74,11 +82,15 @@ func delete(app *config.Env) http.HandlerFunc {
 	}
 }
 
-// @Summary homeHandler returns a list of Video
-// @ID getAll-video
+// @Summary homeHandler returns a list of video
+// @ID getAllVideo
 // @Produce json
-// @Success 200 {object} Video
-// @Failure 404 {object} message
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
 // @Router /video/video/getAll [get]
 func getAll(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -97,12 +109,22 @@ func getAll(app *config.Env) http.HandlerFunc {
 	}
 }
 
-// @Summary homeHandler returns a Video object
-// @ID getAll-video
+// @Summary create returns a video object
+// @ID createVideo
 // @Produce json
-// @Param data body Model:Video true
-// @Success 200 {object} Video
-// @Failure 404 {object} message
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Video
+//
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
 // @Router /video/video/create [post]
 func create(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -135,12 +157,22 @@ func create(app *config.Env) http.HandlerFunc {
 	}
 }
 
-// @Summary update returns a Video object
-// @ID update-video
+// @Summary update returns a video object
+// @ID updateVideo
 // @Produce json
-// @Param data body Model:Video true
-// @Success 200 {object} Video
-// @Failure 404 {object} message
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Video
+//
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
 // @Router /video/video/update [post]
 func update(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -173,13 +205,23 @@ func update(app *config.Env) http.HandlerFunc {
 	}
 }
 
-// @Summary get returns a Video object
+// @Summary get returns a video object
 // @ID get-video
 // @Produce json
-// @Param id path string true
-// @Success 200 {object} Video
-// @Failure 404 {object} message
-// @Router /user/role/get/{id} [get]
+// @Parameters:
+//
+//		-name: tags
+//		 in: query
+//	  required: true
+//		 type: Video
+//
+// @responses:
+//
+//		200: Video
+//	 404: string
+//	 500: string
+//
+// @Router /video/video/get/{id} [get]
 func get(app *config.Env) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")

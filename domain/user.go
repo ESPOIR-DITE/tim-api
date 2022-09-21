@@ -26,8 +26,17 @@ func (u User) Bind(r *http.Request) error {
 	return nil
 }
 
+// Role represents the attribute that a user has in this application.
+//
+// swagger:model
 type Role struct {
-	Id          string `json:"id" gorm:"primaryKey"`
+	// The id for this user
+	//
+	//required: true
+	//min: 1
+	Id string `json:"id" gorm:"primaryKey"`
+	// The name of the role
+	// required: true
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
