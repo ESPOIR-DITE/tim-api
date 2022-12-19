@@ -7,10 +7,10 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 	"net/http"
-	"timtubeApi/config"
-	"timtubeApi/controller/util"
-	"timtubeApi/domain"
-	repository "timtubeApi/storage/user/user-sub-repo"
+	"tim-api/config"
+	"tim-api/controller/util"
+	"tim-api/domain"
+	repository "tim-api/storage/user/user-sub-repo"
 )
 
 func Home(app *config.Env) http.Handler {
