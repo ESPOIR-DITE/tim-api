@@ -30,4 +30,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: timtube-api:$(date +%s)
+        tags: timtube-api:19.12.22.01
