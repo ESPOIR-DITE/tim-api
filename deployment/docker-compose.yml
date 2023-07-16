@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  timtube-net:
+    driver: bridge
+    name: tim-net
+
+services:
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+#    restart: always
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: timtubedb
+      MYSQL_USER: timtubeAdmin
+      MYSQL_PASSWORD: 123#Lunchbar
+    volumes:
+      - my-db:/var/lib/mysql
+#    networks:
+#      - timtube-net
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - "8080:8080"
+
+  timtube-video-stream:
+    image: 0816048957docker/timtube-stream:latest
+    expose:
+      - '8100'
+    ports:
+      - '8100:8100'
+#    networks:
+#      - timtube-net
+
+volumes:
+    my-db:
