@@ -1,92 +1,97 @@
-package video_reaction_repo
+package videoReactionRepository
 
 import (
-	"log"
-	"tim-api/config"
-	video_reaction "tim-api/domain/video/video-reaction"
+	videoReactionDomain "github.com/ESPOIR-DITE/tim-api/domain/video/video.reaction"
+	"gorm.io/gorm"
 )
 
-var connection = config.GetDatabase()
+type VideoReactionRepository struct {
+	GormDB *gorm.DB
+}
 
-func CreateVideoReactionTable() bool {
-	var tableData = &video_reaction.VideoReaction{}
-	err := connection.AutoMigrate(tableData)
+func NewVideoReactionRepository(gormDB *gorm.DB) *VideoReactionRepository {
+	return &VideoReactionRepository{
+		GormDB: gormDB,
+	}
+}
+
+func (vrr VideoReactionRepository) CreateVideoReaction(entity videoReactionDomain.VideoReaction) (*videoReactionDomain.VideoReaction, error) {
+	var tableData = &videoReactionDomain.VideoReaction{}
+	if err := vrr.GormDB.Create(entity).Find(&tableData).Error; err != nil {
+		return nil, err
+	}
+	return tableData, nil
+}
+
+func (vrr VideoReactionRepository) LikeReact(entity videoReactionDomain.VideoReaction) (*videoReactionDomain.VideoReaction, error) {
+	isExist, _ := vrr.IsVideoReactionExist(entity.VideoId)
+	if isExist {
+		return vrr.liked(entity.VideoId)
+	}
+	result, err := vrr.CreateVideoReaction(entity)
 	if err != nil {
-		return false
+		return nil, err
 	}
-	return true
-}
-
-func CreateVideoReaction(entity video_reaction.VideoReaction) video_reaction.VideoReaction {
-	var tableData = video_reaction.VideoReaction{}
-	connection.Create(entity).Find(&tableData)
-	return tableData
-}
-
-func LikeReact(entity video_reaction.VideoReaction) video_reaction.VideoReaction {
-	isExist := IsVideoReactionExist(entity.VideoId)
-	if isExist {
-		return liked(entity.VideoId)
-	}
-	var result = CreateVideoReaction(entity)
 	if result.VideoId != "" {
-		return liked(result.VideoId)
+		return vrr.liked(result.VideoId)
 	}
-	return result
+	return result, nil
 }
-func UnLikeReact(entity video_reaction.VideoReaction) video_reaction.VideoReaction {
-	isExist := IsVideoReactionExist(entity.VideoId)
+func (vrr VideoReactionRepository) UnLikeReact(entity videoReactionDomain.VideoReaction) (*videoReactionDomain.VideoReaction, error) {
+	isExist, _ := vrr.IsVideoReactionExist(entity.VideoId)
 	if isExist {
-		return unLiked(entity.VideoId)
+		return vrr.unLiked(entity.VideoId)
 	}
-	var result = CreateVideoReaction(entity)
-	if result.VideoId != "" {
-		return unLiked(result.VideoId)
+	result, err := vrr.CreateVideoReaction(entity)
+	if err != nil {
+		return nil, err
 	}
-	return result
+	return vrr.unLiked(result.VideoId)
 }
-func liked(videoId string) video_reaction.VideoReaction {
-	videoReaction := GetVideo(videoId)
+func (vrr VideoReactionRepository) liked(videoId string) (*videoReactionDomain.VideoReaction, error) {
+	videoReaction, err := vrr.GetVideo(videoId)
+	if err != nil {
+		return nil, err
+	}
 	videoReaction.Like++
-	return UpdateVideoReaction(videoReaction)
+	return vrr.UpdateVideoReaction(*videoReaction)
 }
-func unLiked(videoId string) video_reaction.VideoReaction {
-	videoReaction := GetVideo(videoId)
-	videoReaction.UnLike++
-	return UpdateVideoReaction(videoReaction)
-}
-
-func GetVideo(id string) video_reaction.VideoReaction {
-	entity := video_reaction.VideoReaction{}
-	connection.Where("video_id = ?", id).Find(&entity)
-	return entity
-}
-
-func UpdateVideoReaction(entity video_reaction.VideoReaction) video_reaction.VideoReaction {
-	var tableData = video_reaction.VideoReaction{}
-	err := connection.Updates(entity).Find(&tableData).Error
+func (vrr VideoReactionRepository) unLiked(videoId string) (*videoReactionDomain.VideoReaction, error) {
+	videoReaction, err := vrr.GetVideo(videoId)
 	if err != nil {
-		log.Fatal(err)
-		return tableData
+		return nil, err
 	}
-	return tableData
+	videoReaction.Unlike++
+	return vrr.UpdateVideoReaction(*videoReaction)
 }
 
-func IsVideoReactionExist(videoId string) bool {
+func (vrr VideoReactionRepository) GetVideo(id string) (*videoReactionDomain.VideoReaction, error) {
+	entity := &videoReactionDomain.VideoReaction{}
+	if err := vrr.GormDB.Where("video_id = ?", id).Find(&entity).Error; err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
+func (vrr VideoReactionRepository) UpdateVideoReaction(entity videoReactionDomain.VideoReaction) (*videoReactionDomain.VideoReaction, error) {
+	var tableData = &videoReactionDomain.VideoReaction{}
+	if err := vrr.GormDB.Updates(entity).Find(tableData).Error; err != nil {
+		return nil, err
+	}
+	return tableData, nil
+}
+
+func (vrr VideoReactionRepository) IsVideoReactionExist(videoId string) (bool, error) {
 	var exists bool
-	err := connection.Model(&video_reaction.VideoReaction{}).Select("count(*) > 0").Where("video_id = ?", videoId).Find(&exists).Error
-	if err != nil {
-		log.Fatal(err)
-		return false
+	if err := vrr.GormDB.Model(&videoReactionDomain.VideoReaction{}).Select("count(*) > 0").Where("video_id = ?", videoId).Find(&exists).Error; err != nil {
+		return false, err
 	}
-	return exists
+	return exists, nil
 }
 
-func DeleteVideoReaction(id string) bool {
-	err := connection.Where("video_id = ?", id).Delete(&video_reaction.VideoReaction{}).Error
-	if err != nil {
-		log.Fatal(err)
-		return false
+func (vrr VideoReactionRepository) DeleteVideoReaction(id string) (bool, error) {
+	if err := vrr.GormDB.Where("video_id = ?", id).Delete(&videoReactionDomain.VideoReaction{}).Error; err != nil {
+		return false, err
 	}
-	return true
+	return true, nil
 }

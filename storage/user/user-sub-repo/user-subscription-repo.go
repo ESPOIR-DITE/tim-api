@@ -1,59 +1,58 @@
-package user_sub_repo
+package userSubscriptionRepository
 
 import (
-	"fmt"
+	userSubscriptionDomain "github.com/ESPOIR-DITE/tim-api/domain/user/user.subscription.domain"
 	"github.com/google/uuid"
-	"tim-api/config"
-	"tim-api/domain"
+	"gorm.io/gorm"
 )
 
-func CreateUserSubscriptionTable() bool {
-	var tableData = &domain.UserSubscription{}
-	err := config.GetDatabase().AutoMigrate(tableData)
-	if err != nil {
-		return false
-	}
-	return true
+type UserSubscriptionRepository struct {
+	GormDB *gorm.DB
 }
-func SetUserSubscriptionDatabase() {
-	err := config.GetDatabase().Set("gorm:table_options", "ENGINE=Distributed(cluster, default, hits)").AutoMigrate(&domain.UserSubscription{})
-	if err != nil {
-		fmt.Println("Role database config not set")
-	} else {
-		fmt.Println("Role database config set successfully")
+
+func NewUserSubscriptionRepository(gormDb *gorm.DB) *UserSubscriptionRepository {
+	return &UserSubscriptionRepository{
+		GormDB: gormDb,
 	}
 }
-func CreateUserSubscription(entity domain.UserSubscription) *domain.UserSubscription {
-	var tableData = &domain.UserSubscription{}
+
+func (usr UserSubscriptionRepository) CreateUserSubscription(entity userSubscriptionDomain.UserSubscription) (*userSubscriptionDomain.UserSubscription, error) {
+	var tableData = &userSubscriptionDomain.UserSubscription{}
 	id := "R-" + uuid.New().String()
-	user := domain.UserSubscription{id, entity.UserId, entity.Stat, entity.SubscriptionId, entity.Date}
-	config.GetDatabase().Create(user).Find(&tableData)
-	return tableData
-}
-func UpdateUserSubscription(entity domain.UserSubscription) *domain.UserSubscription {
-	var tableData = &domain.UserSubscription{}
-	//userSubscription := domain.UserSubscription{entity.Id, entity.Name, entity.Description}
-	config.GetDatabase().Create(entity).Find(&tableData)
-	return tableData
-}
-func GetUserSubscription(customerId string) domain.UserSubscription {
-	entity := domain.UserSubscription{}
-	config.GetDatabase().Where("id = ?", customerId).Find(&entity)
-	return entity
-}
-func GetUserSubscriptions() []domain.UserSubscription {
-	var entity []domain.UserSubscription
-	config.GetDatabase().Find(&entity)
-	return entity
-}
-func DeleteUserSubscription(id string) bool {
-	entity := domain.UserSubscription{}
-	config.GetDatabase().Where("id = ?", id).Delete(&entity)
-	if entity.Id == "" {
-		return true
+	entity.Id = id
+	if err := usr.GormDB.Create(entity).First(&tableData).Error; err != nil {
+		return nil, err
 	}
-	return false
+	return tableData, nil
 }
-func GetUserSubscriptionObject(subscription *domain.UserSubscription) domain.UserSubscription {
-	return domain.UserSubscription{subscription.Id, subscription.UserId, subscription.Stat, subscription.SubscriptionId, subscription.Date}
+func (usr UserSubscriptionRepository) UpdateUserSubscription(entity userSubscriptionDomain.UserSubscription) (*userSubscriptionDomain.UserSubscription, error) {
+	var tableData = &userSubscriptionDomain.UserSubscription{}
+	if err := usr.GormDB.Create(entity).First(&tableData).Error; err != nil {
+		return nil, err
+	}
+	return tableData, nil
+}
+func (usr UserSubscriptionRepository) GetUserSubscription(customerId string) (*userSubscriptionDomain.UserSubscription, error) {
+	entity := &userSubscriptionDomain.UserSubscription{}
+	if err := usr.GormDB.Where("id = ?", customerId).Find(entity).Error; err != nil {
+		return entity, err
+	}
+	return entity, nil
+}
+func (usr UserSubscriptionRepository) GetUserSubscriptions() ([]userSubscriptionDomain.UserSubscription, error) {
+	var entity []userSubscriptionDomain.UserSubscription
+	if err := usr.GormDB.Find(&entity).Error; err != nil {
+		return entity, err
+	}
+	return entity, nil
+}
+func (usr UserSubscriptionRepository) DeleteUserSubscription(id string) (bool, error) {
+	entity := &userSubscriptionDomain.UserSubscription{}
+	if err := usr.GormDB.Where("id = ?", id).Delete(entity).Error; err != nil {
+		return false, err
+	}
+	if entity.Id == "" {
+		return true, nil
+	}
+	return false, nil
 }

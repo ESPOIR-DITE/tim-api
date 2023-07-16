@@ -10,6 +10,16 @@ import (
 	"time"
 )
 
+type JWTService struct {
+	Key []byte
+}
+
+func NewJWTService(key []byte) *JWTService {
+	return &JWTService{
+		Key: key,
+	}
+}
+
 var tokenAuth *jwtauth.JWTAuth
 
 func Init() {
@@ -17,14 +27,16 @@ func Init() {
 	_, tokenString, _ := tokenAuth.Encode(map[string]interface{}{"user_id": "23ope"})
 	fmt.Printf("DEBUG: a sample jwt is %s\n\n", tokenString)
 }
-func EncryptPassword(password string) (string, error) {
+
+func (js JWTService) EncryptPassword(password string) (string, error) {
 	byte, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	if err != nil {
 		return "", err
 	}
 	return string(byte), nil
 }
-func ComparePasswords(hashPass, pass string) (bool, error) {
+
+func (js JWTService) ComparePasswords(hashPass, pass string) (bool, error) {
 	err := bcrypt.CompareHashAndPassword([]byte(hashPass), []byte(pass))
 	if err != nil {
 		return false, err
@@ -34,6 +46,7 @@ func ComparePasswords(hashPass, pass string) (bool, error) {
 
 type JWTClaim struct {
 	Email string `json:"email"`
+	Id    string `json:"email"`
 	Date  jwt.StandardClaims
 }
 
@@ -46,23 +59,24 @@ func (J JWTClaim) Valid() error {
 
 var jwtkey = []byte("supesecretKey")
 
-func GenerateJWT(email string) (string, error) {
-	expiratioTime := time.Now().Add(1 * time.Hour)
+func (js JWTService) GenerateJWT(email, id string) (string, error) {
+	expiryTime := time.Now().Add(1 * time.Hour)
 	claims := &JWTClaim{
-		Email: email, Date: jwt.StandardClaims{ExpiresAt: expiratioTime.Unix()},
+		Email: email, Id: id, Date: jwt.StandardClaims{ExpiresAt: expiryTime.Unix()},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtkey)
+	//tokenString, err := token.SignedString(jwtkey)
+	tokenString, err := token.SignedString(js.Key)
 	return tokenString, err
 }
 
-func ValidateToken(signedToken string) (JWTClaim, error) {
+func (js JWTService) ValidateToken(signedToken string) (JWTClaim, error) {
 	result := JWTClaim{}
 	token, err := jwt.ParseWithClaims(
 		signedToken,
 		&result,
 		func(token *jwt.Token) (interface{}, error) {
-			return []byte(jwtkey), nil
+			return []byte(js.Key), nil
 		})
 	if err != nil {
 		return result, err
@@ -73,7 +87,7 @@ func ValidateToken(signedToken string) (JWTClaim, error) {
 		return result, err
 	}
 	if claims.Date.ExpiresAt < time.Now().Local().Unix() {
-		err = errors.New("token exipired")
+		err = errors.New("token expired")
 	}
 	return result, nil
 }

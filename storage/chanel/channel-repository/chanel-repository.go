@@ -1,76 +1,64 @@
 package role_repo
 
 import (
-	"fmt"
+	"github.com/ESPOIR-DITE/tim-api/domain/channel/channel"
 	"github.com/google/uuid"
-	"tim-api/config"
-	"tim-api/domain"
+	"gorm.io/gorm"
 )
 
-var connection = config.GetDatabase()
+type ChanelRepository struct {
+	GormDB *gorm.DB
+}
 
-func CreateChannelTable() bool {
-	var tableData = &domain.Channel{}
-	err := connection.AutoMigrate(tableData)
-	if err != nil {
-		return false
-	}
-	return true
-}
-func SetChannelDatabase() {
-	err := connection.Set("gorm:table_options", "ENGINE=Distributed(cluster, default, hits)").AutoMigrate(&domain.Channel{})
-	if err != nil {
-		fmt.Println("Role database config not set")
-	} else {
-		fmt.Println("Role database config set successfully")
+func NewChanelRepository(gormDB *gorm.DB) *ChanelRepository {
+	return &ChanelRepository{
+		GormDB: gormDB,
 	}
 }
-func CreateChannel(channel domain.Channel) domain.Channel {
-	var tableData = domain.Channel{}
+
+func (db *ChanelRepository) CreateChannel(channelObject channel.Channel) *channel.Channel {
+	var tableData = &channel.Channel{}
 	id := "C-" + uuid.New().String()
-	user := domain.Channel{id, channel.Name, channel.ChannelTypeId, channel.UserId, channel.Region, channel.Date, channel.Image, "", channel.Description}
-	connection.Create(user).Find(&tableData)
+	//user.home.controller.domain.controller := domain.Channel{id, channel.controller.Name, channel.controller.ChannelTypeId, channel.controller.UserId, channel.controller.Region, channel.controller.Date, channel.controller.Image, "", channel.controller.Description}
+	channelObject.Id = id
+	db.GormDB.Create(channelObject).Find(&tableData)
 	return tableData
 }
-func UpdateChannel(entity domain.Channel) domain.Channel {
-	var tableData = domain.Channel{}
-	//user := domain.Role{entity.Id, entity.Name, entity.Description}
-	connection.Where("id = ", entity.Id).Updates(entity).Find(&tableData)
+func (db *ChanelRepository) UpdateChannel(entity channel.Channel) *channel.Channel {
+	var tableData = &channel.Channel{}
+	db.GormDB.Where("id = ", entity.Id).Updates(entity).Find(&tableData)
 	return tableData
 }
-func GetChannel(roleId string) domain.Channel {
-	entity := domain.Channel{}
-	connection.Where("id = ?", roleId).Find(&entity)
+func (db *ChanelRepository) GetChannel(roleId string) *channel.Channel {
+	entity := &channel.Channel{}
+	db.GormDB.Where("id = ?", roleId).Find(&entity)
 	return entity
 }
-func GetChannelsByUser(userId string) []domain.Channel {
-	entity := []domain.Channel{}
-	connection.Where("user_id = ?", userId).Find(&entity)
+func (db *ChanelRepository) GetChannelsByUser(userId string) []channel.Channel {
+	entity := []channel.Channel{}
+	db.GormDB.Where("user_id = ?", userId).Find(&entity)
 	return entity
 }
-func GetChannelsByRegion(region string) []domain.Channel {
-	entity := []domain.Channel{}
-	config.GetDatabase().Where("region = ?", region).Find(&entity)
+func (db *ChanelRepository) GetChannelsByRegion(region string) []channel.Channel {
+	entity := []channel.Channel{}
+	db.GormDB.Where("region = ?", region).Find(&entity)
 	return entity
 }
-func GetChannels() []domain.Channel {
-	var entity []domain.Channel
-	connection.Find(&entity)
+func (db *ChanelRepository) GetChannels() []channel.Channel {
+	var entity []channel.Channel
+	db.GormDB.Find(&entity)
 	return entity
 }
-func DeleteChannel(id string) bool {
-	entity := domain.ChannelType{}
-	connection.Where("id = ?", id).Delete(&entity)
+func (db *ChanelRepository) DeleteChannel(id string) bool {
+	entity := channel.Channel{}
+	db.GormDB.Where("id = ?", id).Delete(&entity)
 	if entity.Id == "" {
 		return true
 	}
 	return false
 }
-func CountChannel() int64 {
+func (db *ChanelRepository) CountChannel() *int64 {
 	var value int64
-	connection.Table("channels").Count(&value)
-	return value
-}
-func GetChannelObject(channel *domain.Channel) domain.Channel {
-	return domain.Channel{channel.Id, channel.Name, channel.ChannelTypeId, channel.UserId, channel.Region, channel.Date, channel.Image, channel.ImageBase64, channel.Description}
+	db.GormDB.Table("channels").Count(&value)
+	return &value
 }

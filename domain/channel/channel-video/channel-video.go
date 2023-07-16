@@ -17,3 +17,7 @@ func (c ChannelVideos) Bind(r *http.Request) error {
 	}
 	return nil
 }
+
+func (ChannelVideos) TableName() string {
+	return "channel_video"
+}

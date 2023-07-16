@@ -1,60 +1,61 @@
 package video_category
 
 import (
-	"fmt"
+	videoCategoryDomain "github.com/ESPOIR-DITE/tim-api/domain/video/video.category.domain"
 	"github.com/google/uuid"
-	"tim-api/config"
-	"tim-api/domain"
+	"gorm.io/gorm"
 )
 
-var connection = config.GetDatabase()
+type VideoCategoryRepository struct {
+	GormDB *gorm.DB
+}
 
-func CreateVideoCategoryTable() bool {
-	var tableData = &domain.VideoCategory{}
-	err := connection.AutoMigrate(tableData)
-	if err != nil {
-		return false
-	}
-	return true
-}
-func SetDatabase() {
-	erro := connection.Set("gorm:table_options", "ENGINE=Distributed(cluster, default, hits)").AutoMigrate(&domain.VideoCategory{})
-	if erro != nil {
-		fmt.Println("VideoCategory database config not set")
-	} else {
-		fmt.Println("VideoCategory database config set successfully")
+func NewVideoCategoryRepository(gormDB *gorm.DB) *VideoCategoryRepository {
+	return &VideoCategoryRepository{
+		GormDB: gormDB,
 	}
 }
-func CreateVideoCategory(entity domain.VideoCategory) *domain.VideoCategory {
-	var tableData = &domain.VideoCategory{}
+
+func (vcr VideoCategoryRepository) CreateVideoCategory(entity videoCategoryDomain.VideoCategory) (*videoCategoryDomain.VideoCategory, error) {
+	var tableData = &videoCategoryDomain.VideoCategory{}
 	id := "VC-" + uuid.New().String()
-	user := domain.VideoCategory{id, entity.VideoId, entity.CategoryId}
-	connection.Create(user).Find(&tableData)
-	return tableData
-}
-func UpdateVideoCategory(entity domain.VideoCategory) *domain.VideoCategory {
-	var tableData = &domain.VideoCategory{}
-	connection.Create(entity).Find(&tableData)
-	return tableData
-}
-func GetVideo(id string) domain.VideoCategory {
-	entity := domain.VideoCategory{}
-	connection.Where("id = ?", id).Find(&entity)
-	return entity
-}
-func GetVideoCategories() []domain.VideoCategory {
-	entity := []domain.VideoCategory{}
-	connection.Find(&entity)
-	return entity
-}
-func DeleteVideoCategory(email string) bool {
-	entity := domain.VideoCategory{}
-	connection.Where("id = ?", email).Delete(&entity)
-	if entity.Id == "" {
-		return true
+	entity.Id = id
+	if err := vcr.GormDB.Create(entity).First(tableData).Error; err != nil {
+		return nil, err
 	}
-	return false
+	return tableData, nil
 }
-func GetVideoObject(entity *domain.VideoCategory) domain.VideoCategory {
-	return domain.VideoCategory{entity.Id, entity.VideoId, entity.CategoryId}
+
+func (vcr VideoCategoryRepository) UpdateVideoCategory(entity videoCategoryDomain.VideoCategory) (*videoCategoryDomain.VideoCategory, error) {
+	var tableData = &videoCategoryDomain.VideoCategory{}
+	if err := vcr.GormDB.Create(entity).First(&tableData).Error; err != nil {
+		return nil, err
+	}
+	return tableData, nil
+}
+
+func (vcr VideoCategoryRepository) GetVideoCategory(id string) (*videoCategoryDomain.VideoCategory, error) {
+	entity := &videoCategoryDomain.VideoCategory{}
+	if err := vcr.GormDB.Where("id = ?", id).First(entity).Error; err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
+func (vcr VideoCategoryRepository) GetVideoCategories() ([]videoCategoryDomain.VideoCategory, error) {
+	entity := []videoCategoryDomain.VideoCategory{}
+	if err := vcr.GormDB.Find(&entity).Error; err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+func (vcr VideoCategoryRepository) DeleteVideoCategory(email string) (bool, error) {
+	entity := &videoCategoryDomain.VideoCategory{}
+	if err := vcr.GormDB.Where("id = ?", email).Delete(&entity).Error; err != nil {
+		return false, err
+	}
+	if entity.Id == "" {
+		return true, nil
+	}
+	return false, nil
 }

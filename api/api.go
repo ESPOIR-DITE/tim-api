@@ -1,8 +1,8 @@
 package api
 
 import (
+	"github.com/ESPOIR-DITE/tim-api/config"
 	"gopkg.in/resty.v1"
-	"tim-api/config"
 )
 
 // const BASE_URL string = "http://localhost:9000/ostm/"

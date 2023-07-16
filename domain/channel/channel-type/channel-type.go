@@ -17,3 +17,7 @@ func (c ChannelType) Bind(r *http.Request) error {
 	}
 	return nil
 }
+
+func (ChannelType) TableName() string {
+	return "channel_type"
+}

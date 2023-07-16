@@ -2,19 +2,16 @@ package controller_auth
 
 import (
 	"errors"
-	"github.com/go-chi/render"
-	"net/http"
-	"tim-api/controller/util"
-	"tim-api/security"
+	server_config "github.com/ESPOIR-DITE/tim-api/config/server.config"
 )
 
-func IsAllowed(token string, w http.ResponseWriter, r *http.Request) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := security.ValidateToken(token)
-		if err != nil {
-			render.Render(w, r, util.ErrRecourseNotAllowed(errors.New("Please try to read again.")))
-			return
-		}
-
+func IsAllowed(app *server_config.Env, token string) (*string, error) {
+	if token == "" {
+		return nil, errors.New("You are not allowed to access this resource")
 	}
+	jwtClaim, err := app.SecurityService.ValidateToken(token)
+	if err != nil {
+		return nil, errors.New("Please login again. You have an invalid token")
+	}
+	return &jwtClaim.Id, nil
 }

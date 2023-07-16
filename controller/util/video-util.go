@@ -3,21 +3,23 @@ package util
 import (
 	"errors"
 	"fmt"
+	server_config "github.com/ESPOIR-DITE/tim-api/config/server.config"
+	videoDataDomain "github.com/ESPOIR-DITE/tim-api/domain/video/video.data.domain"
+	videodataRepository "github.com/ESPOIR-DITE/tim-api/storage/video/video.data.repository"
 	"github.com/mowshon/moviego"
+	log "github.com/sirupsen/logrus"
 	"image"
 	"image/png"
 	"io/ioutil"
 	"os"
-	"tim-api/domain"
-	video_data "tim-api/storage/video/video-data"
 	"time"
 )
 
-const pictureURL = "files/videos/"
+const pictureURL = "files/pictures/"
 
 //const pictureURL = "files/pictures/"
 
-const videoURL = "files/test/"
+const videoURL = "files/videos/"
 
 //const videoURL = "videos/"
 
@@ -30,7 +32,7 @@ func ReadVideoFile(id, extension string) ([]byte, error) {
 	return fileBytes, nil
 }
 
-func VideoWriter(date domain.VideoData, isUpdate bool) {
+func VideoWriter(app *server_config.Env, date videoDataDomain.VideoData, isUpdate bool, repo *videodataRepository.VideoDataRepository) {
 	tempFile, err := os.Create(videoURL + date.Id + "." + date.FileType)
 	if err != nil {
 		fmt.Println(err, " Creating video temp file")
@@ -39,15 +41,53 @@ func VideoWriter(date domain.VideoData, isUpdate bool) {
 	if err != nil {
 		fmt.Println(err, "fail to write File")
 	} else {
-		fmt.Println("Successfully Wrote video")
+		fmt.Println("Successfully Wrote video.controller")
 		time.Sleep(1 * time.Minute)
-		ScreenShort(date.Id, date.FileType)
-		time.Sleep(1 * time.Minute)
-		err := CropImage(date.Id + ".png")
-		if err != nil {
-			fmt.Println(err, " error cropping")
+		err := ScreenShort(date.Id, date.FileType)
+		if err == nil {
+			time.Sleep(1 * time.Minute)
+			err := CropImage(date.Id + ".png")
+			if err != nil {
+				fmt.Println(err, " error cropping")
+			}
 		}
-		err = savePicture(date, isUpdate)
+
+		err = savePicture(date, isUpdate, repo)
+		if err != nil {
+			fmt.Println(err, " error saving image")
+		}
+	}
+}
+
+func VideoWriterWithS3(app *server_config.Env, date videoDataDomain.VideoData, isUpdate bool, repo *videodataRepository.VideoDataRepository) {
+	tempFile, err := os.Create(videoURL + date.Id + "." + date.FileType)
+	if err != nil {
+		fmt.Println(err, " Creating video temp file")
+	}
+	_, err = tempFile.Write(date.Video)
+	if err != nil {
+		fmt.Println(err, "fail to write video File to S3")
+		return
+	}
+	_, err = app.PhotoS3Bucket.AddJsonPayload("tim-api-videos", date.Id, date.Video)
+	if err != nil {
+		fmt.Println(err, "fail to write video File to S3")
+	} else {
+		fmt.Println("Successfully Wrote video.controller")
+		time.Sleep(1 * time.Minute)
+		err := ScreenShort(date.Id, date.FileType)
+		if err == nil {
+			time.Sleep(1 * time.Minute)
+			err := CropImage(date.Id + ".png")
+			if err != nil {
+				fmt.Println(err, " error cropping")
+			}
+		}
+		err = savePictureToS3(app, date, isUpdate, repo)
+		if err != nil {
+			fmt.Println(err, " error saving image")
+		}
+		err = os.Remove(videoURL + date.Id + "." + date.FileType)
 		if err != nil {
 			fmt.Println(err, " error saving image")
 		}
@@ -55,18 +95,19 @@ func VideoWriter(date domain.VideoData, isUpdate bool) {
 }
 
 // Tested working
-func ScreenShort(id, extension string) {
-	first, err := moviego.Load(videoURL + id + "." + extension)
+func ScreenShort(id, extension string) error {
+	movie, err := moviego.Load(videoURL + id + "." + extension)
 	if err != nil {
 		fmt.Println(err, "error ScreenShorting")
+		return err
 	}
-	result, err := first.Screenshot(5, pictureURL+id+".png")
+	_, err = movie.Screenshot(5, pictureURL+id+".png")
 	if err != nil {
 		fmt.Println(err, "error")
-	} else {
-		fmt.Println("Result: ", result)
+		return err
 	}
 	fmt.Println("screenshot successfully")
+	return nil
 }
 
 // CropImage This crops an image removing extra size in the edge of
@@ -90,7 +131,7 @@ func CropImage(imageURL string) error {
 }
 
 // savePicture this submits videoData data to the api.
-func savePicture(data domain.VideoData, isUpdate bool) error {
+func savePicture(data videoDataDomain.VideoData, isUpdate bool, repo *videodataRepository.VideoDataRepository) error {
 	picture, err := os.ReadFile(pictureURL + data.Id + ".png")
 	if err != nil {
 		fmt.Println(err, " could not read picture!")
@@ -100,19 +141,64 @@ func savePicture(data domain.VideoData, isUpdate bool) error {
 		if errRemove != nil {
 			fmt.Println(errRemove, " could not Remove picture!")
 		}
-		videoDataObject := domain.VideoData{data.Id, picture, []byte{}, data.FileType, data.FileSize}
+		videoDataObject := videoDataDomain.VideoData{
+			Id:       data.Id,
+			Picture:  picture,
+			Video:    []byte{},
+			FileType: data.FileType,
+			FileSize: data.FileSize,
+		}
 		if isUpdate {
-			result := video_data.UpdateVideoDate(videoDataObject)
-			if result.Id == "" {
+			_, err := repo.UpdateVideoDate(videoDataObject)
+			if err != nil {
 				fmt.Println("error update videoData")
 				return errors.New("Could not update videoData!")
 			}
 		}
-		result := video_data.CreateVideoData(videoDataObject)
-		if result.Id == "" {
+		_, err := repo.CreateVideoData(videoDataObject)
+		if err != nil {
 			fmt.Println("error creating videoData")
 			return errors.New("Could not create videoData!")
 		}
+	}
+	return nil
+}
+
+func savePictureToS3(app *server_config.Env, data videoDataDomain.VideoData, isUpdate bool, repo *videodataRepository.VideoDataRepository) error {
+	picture, err := os.ReadFile(pictureURL + data.Id + ".png")
+	if err != nil {
+		fmt.Println(err, " could not read picture!")
+		return err
+	} else {
+		errRemove := os.Remove(pictureURL + data.Id + ".png")
+		if errRemove != nil {
+			fmt.Println(errRemove, " could not Remove picture!")
+		}
+		videoDataObject := videoDataDomain.VideoData{
+			Id:       data.Id,
+			Picture:  []byte{},
+			Video:    []byte{},
+			FileType: data.FileType,
+			FileSize: data.FileSize,
+		}
+		if isUpdate {
+			_, err := repo.UpdateVideoDate(videoDataObject)
+			if err != nil {
+				fmt.Println("error update videoData")
+				return errors.New("Could not update videoData!")
+			}
+		}
+		_, err := repo.CreateVideoData(videoDataObject)
+		if err != nil {
+			fmt.Println("error creating videoData")
+			return errors.New("Could not create videoData!")
+		}
+		go func() {
+			_, err := app.PhotoS3Bucket.AddJsonPayload("tim-api-photos", data.Id, picture)
+			if err != nil {
+				log.Errorf("picture upload fail in s3, error: %d", err)
+			}
+		}()
 	}
 	return nil
 }
@@ -124,6 +210,14 @@ func GetVideoPictures(id string) ([]byte, error) {
 		fmt.Println(err, "error reading file")
 	}
 	return dat, err
+}
+
+func GetVideoPictureFromS3(app *server_config.Env, id string) ([]byte, error) {
+	picture, err := app.PhotoS3Bucket.DownloadFile("tim-api-videos", id)
+	if err != nil {
+		fmt.Println(err, "error reading file")
+	}
+	return picture, err
 }
 
 // readImage reads a image file from disk. We're assuming the file will be png

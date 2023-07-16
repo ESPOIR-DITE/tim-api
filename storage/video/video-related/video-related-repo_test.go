@@ -1,10 +1,10 @@
-package video_related
+package videoRelatedRepository
 
 //
 //import (
 //	"fmt"
 //	"testing"
-//	video_related "tim-api/domain/video/video-related"
+//	video_related "tim-api/domain/video.controller/video.controller-related"
 //)
 //
 //func TestCreateVideoRelatedTable(t *testing.T) {

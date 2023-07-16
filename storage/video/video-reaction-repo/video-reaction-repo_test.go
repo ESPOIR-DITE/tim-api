@@ -1,10 +1,10 @@
-package video_reaction_repo
+package videoReactionRepository
 
 //
 //import (
 //	"fmt"
 //	"testing"
-//	video_reaction "tim-api/domain/video/video-reaction"
+//	video_reaction "tim-api/domain/video.controller/video.controller-reaction"
 //)
 //
 //func TestCreateVideoReactionTable(t *testing.T) {

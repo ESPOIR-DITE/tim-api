@@ -1,4 +1,4 @@
-package user_account_repo
+package userAccountRepository
 
 //
 //import (

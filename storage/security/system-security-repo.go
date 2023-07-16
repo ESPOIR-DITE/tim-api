@@ -1,9 +1,9 @@
 package security
 
 import (
+	"github.com/ESPOIR-DITE/tim-api/config"
+	"github.com/ESPOIR-DITE/tim-api/domain/security"
 	"log"
-	"tim-api/config"
-	"tim-api/domain/security"
 )
 
 var connection = config.GetDatabase()
@@ -24,6 +24,7 @@ func CreateSystemData(entity security.SystemData) (security.SystemData, error) {
 	}
 	return tableData, nil
 }
+
 func GetSystemData(id string) (security.SystemData, error) {
 	entity := security.SystemData{}
 	err := connection.Where("identifier = ?", id).Find(&entity).Error

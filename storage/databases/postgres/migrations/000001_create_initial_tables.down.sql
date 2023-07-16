@@ -1,0 +1,17 @@
+DROP TABLE IF EXISTS 'channel';
+DROP TABLE IF EXISTS 'channel_type';
+DROP TABLE IF EXISTS 'channel_subscription';
+DROP TABLE IF EXISTS 'channel_video';
+DROP TABLE IF EXISTS 'channel_subscription';
+DROP TABLE IF EXISTS 'role';
+DROP TABLE IF EXISTS 'user';
+DROP TABLE IF EXISTS 'user_account';
+DROP TABLE IF EXISTS 'account';
+DROP TABLE IF EXISTS 'user_detail';
+DROP TABLE IF EXISTS 'user_bank';
+DROP TABLE IF EXISTS 'user_subscription';
+DROP TABLE IF EXISTS 'category';
+DROP TABLE IF EXISTS 'video_category';
+DROP TABLE IF EXISTS 'video_comment';
+DROP TABLE IF EXISTS 'video_data';
+DROP TABLE IF EXISTS 'video_reaction';

@@ -2,8 +2,8 @@ package channel
 
 import (
 	"tim-api/domain"
-	role_repo "tim-api/storage/chanel/channel-repository"
-	role_repo2 "tim-api/storage/chanel/channelSubscription"
+	role_repo "tim-api/storage/chanel/channel.controller-repository"
+	role_repo2 "tim-api/storage/chanel/channel.subscription.controller.repository"
 )
 
 type ChannelMax struct {

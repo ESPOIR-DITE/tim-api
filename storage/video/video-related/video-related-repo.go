@@ -1,43 +1,43 @@
-package video_related
+package videoRelatedRepository
 
 import (
 	"fmt"
-	"tim-api/config"
-	video_related "tim-api/domain/video/video-related"
+	videoRelatedDomain "github.com/ESPOIR-DITE/tim-api/domain/video/video.related.domain"
+	"gorm.io/gorm"
 )
 
-var connection = config.GetDatabase()
-
-func CreateVideoRelatedTable() bool {
-	var tableData = &video_related.VideoRelated{}
-	err := connection.AutoMigrate(tableData)
-	if err != nil {
-		return false
-	}
-	return true
+type VideoRelatedRepository struct {
+	GormDB *gorm.DB
 }
-func CreateVideoRelated(entity video_related.VideoRelated) (video_related.VideoRelated, error) {
-	var tableData = video_related.VideoRelated{}
-	err := connection.Create(entity).Find(&tableData).Error
+
+func NewVideoRelatedRepository(gormDB *gorm.DB) *VideoRelatedRepository {
+	return &VideoRelatedRepository{
+		GormDB: gormDB,
+	}
+}
+
+func (vrr VideoRelatedRepository) CreateVideoRelated(entity videoRelatedDomain.VideoRelated) (*videoRelatedDomain.VideoRelated, error) {
+	var tableData = &videoRelatedDomain.VideoRelated{}
+	err := vrr.GormDB.Create(entity).Find(tableData).Error
 	if err != nil {
-		fmt.Println("error creating video related")
+		fmt.Println("error creating video.controller related")
 		return tableData, err
 	}
 	return tableData, nil
 }
-func GetVideosRelatedTo(videoId string) ([]video_related.VideoRelated, error) {
-	entity := []video_related.VideoRelated{}
-	err := connection.Where("current_video_id = ?", videoId).Or("related_video_id = ?", videoId).Find(&entity).Error
+func (vrr VideoRelatedRepository) GetVideosRelatedTo(videoId string) ([]videoRelatedDomain.VideoRelated, error) {
+	entity := []videoRelatedDomain.VideoRelated{}
+	err := vrr.GormDB.Where("current_video_id = ?", videoId).Or("related_video_id = ?", videoId).Find(&entity).Error
 	if err != nil {
-		fmt.Println("error reading video related")
+		fmt.Println("error reading video.controller related")
 		return entity, err
 	}
 	return entity, nil
 }
-func DeleteVideoRelated(videoRelated video_related.VideoRelated) (bool, error) {
-	err := connection.Where("current_video_id = ? AND related_video_id = ?", videoRelated.CurrentVideoId, videoRelated.RelatedVideoId).Delete(&video_related.VideoRelated{}).Error
+func (vrr VideoRelatedRepository) DeleteVideoRelated(videoRelated videoRelatedDomain.VideoRelated) (bool, error) {
+	err := vrr.GormDB.Where("current_video_id = ? AND related_video_id = ?", videoRelated.CurrentVideoId, videoRelated.RelatedVideoId).Delete(&videoRelatedDomain.VideoRelated{}).Error
 	if err != nil {
-		fmt.Println("error deleting video related")
+		fmt.Println("error deleting video.controller related")
 		return false, err
 	}
 	return true, nil

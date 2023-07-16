@@ -24,7 +24,7 @@ func Video() {
 	if err := device.Start(ctx); err != nil {
 		log.Fatalf("failed to start stream: %s", err)
 	}
-	// process frames from capture channel
+	// process frames from capture channel.controller
 	totalFrames := 10
 	log.Printf("Capturing %d frames...", totalFrames)
 	fileName := "V-2af608bf-80c3-451d-b5b9-05b6c36d53c9.mp4"
