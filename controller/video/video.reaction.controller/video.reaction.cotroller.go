@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ESPOIR-DITE/tim-api/config"
+	server_config "github.com/ESPOIR-DITE/tim-api/config/server.config"
 	"github.com/ESPOIR-DITE/tim-api/controller/util"
 	video_reaction "github.com/ESPOIR-DITE/tim-api/domain/video/video.reaction"
 	videoReactionRepository "github.com/ESPOIR-DITE/tim-api/storage/video/video-reaction-repo"
@@ -14,7 +14,7 @@ import (
 	"net/http"
 )
 
-func Home(app *config.Env) http.Handler {
+func Home(app *server_config.Env) http.Handler {
 	r := chi.NewRouter()
 	repo := videoReactionRepository.NewVideoReactionRepository(app.GormDB)
 	r.Get("/get/{id}", get(app, repo))
@@ -22,7 +22,7 @@ func Home(app *config.Env) http.Handler {
 	return r
 }
 
-func reactToVideo(app *config.Env, repo *videoReactionRepository.VideoReactionRepository) http.HandlerFunc {
+func reactToVideo(app *server_config.Env, repo *videoReactionRepository.VideoReactionRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := video_reaction.VideoReaction{}
 		err := render.Bind(r, &data)
@@ -69,7 +69,7 @@ func reactToVideo(app *config.Env, repo *videoReactionRepository.VideoReactionRe
 	}
 }
 
-func get(app *config.Env, repo *videoReactionRepository.VideoReactionRepository) http.HandlerFunc {
+func get(app *server_config.Env, repo *videoReactionRepository.VideoReactionRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		if id != "" {

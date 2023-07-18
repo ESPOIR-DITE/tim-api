@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ESPOIR-DITE/tim-api/config"
+	server_config "github.com/ESPOIR-DITE/tim-api/config/server.config"
 	"github.com/ESPOIR-DITE/tim-api/controller/util"
 	videoCommentDomain "github.com/ESPOIR-DITE/tim-api/domain/video/video.comment.domain"
 	videoCommentRepository "github.com/ESPOIR-DITE/tim-api/storage/video/video.comment"
@@ -14,7 +14,7 @@ import (
 	"net/http"
 )
 
-func Home(app *config.Env) http.Handler {
+func Home(app *server_config.Env) http.Handler {
 	r := chi.NewRouter()
 	repo := videoCommentRepository.NewVideoCommentRepository(app.GormDB)
 
@@ -26,7 +26,7 @@ func Home(app *config.Env) http.Handler {
 	return r
 }
 
-func delete(app *config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
+func delete(app *server_config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		if id != "" {
@@ -52,7 +52,7 @@ func delete(app *config.Env, repo *videoCommentRepository.VideoCommentRepository
 	}
 }
 
-func getAll(app *config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
+func getAll(app *server_config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, err := repo.GetVideoComments()
 		if err != nil {
@@ -74,7 +74,7 @@ func getAll(app *config.Env, repo *videoCommentRepository.VideoCommentRepository
 	}
 }
 
-func create(app *config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
+func create(app *server_config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := &videoCommentDomain.VideoComment{}
 		err := render.Bind(r, data)
@@ -103,7 +103,7 @@ func create(app *config.Env, repo *videoCommentRepository.VideoCommentRepository
 	}
 }
 
-func update(app *config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
+func update(app *server_config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := &videoCommentDomain.VideoComment{}
 		err := render.Bind(r, data)
@@ -132,7 +132,7 @@ func update(app *config.Env, repo *videoCommentRepository.VideoCommentRepository
 	}
 }
 
-func get(app *config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
+func get(app *server_config.Env, repo *videoCommentRepository.VideoCommentRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		if id != "" {

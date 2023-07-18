@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/ESPOIR-DITE/tim-api/config"
+	server_config "github.com/ESPOIR-DITE/tim-api/config/server.config"
 	"github.com/ESPOIR-DITE/tim-api/controller/util"
 	video_related "github.com/ESPOIR-DITE/tim-api/domain/video/video.related.domain"
 	videoRelatedDomain "github.com/ESPOIR-DITE/tim-api/storage/video/video-related"
@@ -14,7 +14,7 @@ import (
 	"net/http"
 )
 
-func Home(app *config.Env) http.Handler {
+func Home(app *server_config.Env) http.Handler {
 	r := chi.NewRouter()
 
 	repo := videoRelatedDomain.NewVideoRelatedRepository(app.GormDB)
@@ -24,7 +24,7 @@ func Home(app *config.Env) http.Handler {
 	return r
 }
 
-func create(app *config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
+func create(app *server_config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := video_related.VideoRelated{}
 		err := render.Bind(r, &data)
@@ -52,7 +52,7 @@ func create(app *config.Env, repo *videoRelatedDomain.VideoRelatedRepository) ht
 	}
 }
 
-func deleteVideoRelated(app *config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
+func deleteVideoRelated(app *server_config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		data := video_related.VideoRelated{}
 		err := render.Bind(r, &data)
@@ -78,7 +78,7 @@ func deleteVideoRelated(app *config.Env, repo *videoRelatedDomain.VideoRelatedRe
 	}
 }
 
-func get(app *config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
+func get(app *server_config.Env, repo *videoRelatedDomain.VideoRelatedRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		if id != "" {

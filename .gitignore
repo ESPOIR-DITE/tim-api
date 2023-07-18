@@ -1,3 +1,4 @@
 #api/api.go
 #config/mysqlconfig.go
 #controller/util/sms.go
+.idea
